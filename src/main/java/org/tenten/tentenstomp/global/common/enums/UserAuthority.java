@@ -1,4 +1,5 @@
 package org.tenten.tentenstomp.global.common.enums;
 
-public enum TempEnum {
+public enum UserAuthority {
+    ROLE_USER;
 }
