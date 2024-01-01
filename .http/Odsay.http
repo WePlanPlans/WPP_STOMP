@@ -1,0 +1,13 @@
+### 대중교통 길 찾기 정자역 -> 부산
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=127.1051573&SY=37.3718141&EX=129.042243&EY=35.115225
+Origin: http://api.weplanplans.site
+
+### 대중교통 길 찾기 정자역 -> 더현대서울
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=127.1051573&SY=37.3718141&EX=126.9284261&EY=37.5258975
+Origin: https://weplanplans.site
+
+
+### 대중교통 길 찾기 정자역 -> 경찰병원역
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=127.1051573&SY=37.3718141&EX=227.124206&EY=37.495701
+Origin: https://weplanplans.site
+
