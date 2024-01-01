@@ -9,8 +9,8 @@ Content-Type: application/json
     "transportation": "CAR",
     "visitDate": "2023-12-31",
     "estimatePrice": 10000,
-    "latitude": "127.1058342",
-    "longitude": "37.359708"
+    "longitude": "127.1058342",
+    "latitude": "37.359708"
   },
   "to": {
     "tripItemId": 2,
@@ -18,7 +18,32 @@ Content-Type: application/json
     "transportation": "CAR",
     "visitDate": "2023-12-31",
     "estimatePrice": 10000,
-    "latitude": "126.9284261",
-    "longitude": "37.5258975"
+    "longitude": "126.9284261",
+    "latitude": "37.5258975"
+  }
+}
+
+### 대중교통 경로 계산 테스트
+GET http://localhost:8080/path/public
+Content-Type: application/json
+
+{
+  "from": {
+    "tripItemId": 1,
+    "seqNum": 1,
+    "transportation": "CAR",
+    "visitDate": "2023-12-31",
+    "estimatePrice": 10000,
+    "longitude": "127.1058342",
+    "latitude": "37.359708"
+  },
+  "to": {
+    "tripItemId": 2,
+    "seqNum": 2,
+    "transportation": "CAR",
+    "visitDate": "2023-12-31",
+    "estimatePrice": 10000,
+    "longitude": "126.9284261",
+    "latitude": "37.5258975"
   }
 }

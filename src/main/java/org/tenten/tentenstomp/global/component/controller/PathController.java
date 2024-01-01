@@ -27,7 +27,6 @@ public class PathController {
 
     @GetMapping("/public")
     public ResponseEntity<?> publicPathTest(@RequestBody TempPathCalculateRequest calculateRequest) {
-        pathComponent.calculatePathByPublicTransportation(calculateRequest.from(), calculateRequest.to());
-        return ResponseEntity.ok("CHECK LOG");
+        return ResponseEntity.ok(GlobalDataResponse.ok(SUCCESS, pathComponent.calculatePathByPublicTransportation(calculateRequest.from(), calculateRequest.to())));
     }
 }

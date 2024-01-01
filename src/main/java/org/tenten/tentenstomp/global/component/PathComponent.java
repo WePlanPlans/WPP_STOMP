@@ -18,6 +18,7 @@ public class PathComponent {
     }
 
     public PathInfo calculatePathByPublicTransportation(TripPlaceInfo fromPlace, TripPlaceInfo toPlace) {
-        return null;
+        Long price = odsayComponent.calculatePrice(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
+        return new PathInfo(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), price);
     }
 }

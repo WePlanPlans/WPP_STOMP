@@ -40,8 +40,8 @@ public class NaverMapComponent {
                                String toLatitude) {
         UriComponents uri = UriComponentsBuilder
             .fromUriString(BASE_URL)
-            .queryParam("start", fromLatitude + "," + fromLongitude)
-            .queryParam("goal",toLatitude+","+toLongitude)
+            .queryParam("start", fromLongitude + "," + fromLatitude)
+            .queryParam("goal",toLongitude+","+toLatitude)
             .build();
         log.info(uri.toUriString());
         HttpHeaders header = new HttpHeaders();
@@ -69,10 +69,10 @@ public class NaverMapComponent {
                 Integer fuelPrice = (Integer) summary.get("fuelPrice");
                 return (long) tollFare + fuelPrice;
             } else {
-                throw new GlobalException("경로를 조회할 수 없습니다.", CONFLICT);
+                throw new GlobalException("자동차 경로를 조회할 수 없습니다.", CONFLICT);
             }
         } catch (JsonProcessingException e) {
-            throw new GlobalException("응답 파일을 읽어오는 과정에서 오류가 발생했습니다.", CONFLICT);
+            throw new GlobalException("자동차 경로 응답 파일을 읽어오는 과정에서 오류가 발생했습니다.", CONFLICT);
         } catch (Exception e) {
             log.info(e.getMessage());
             return null;
