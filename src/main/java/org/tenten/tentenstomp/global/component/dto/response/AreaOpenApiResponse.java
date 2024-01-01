@@ -7,58 +7,21 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AreaOpenApiResponse {
-    Response response;
+public record AreaOpenApiResponse(Response response) {
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Response {
-        Header header;
-        Body body;
+    public record Response(Header header, Body body) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Header {
-        String resultCode;
-        String resultMsg;
+    public record Header(String resultCode, String resultMsg) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Body {
-        Item items;
-        Integer numOfRows;
-        Integer pageNo;
-        Integer totalCount;
+    public record Body(Item items, Integer numOfRows, Integer pageNo, Integer totalCount) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Item {
-        List<Area> item;
+    public record Item(List<Area> item) {
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Area {
-        Integer rnum;
-        String code;
-        String name;
+    public record Area(Integer rnum, String code, String name) {
     }
 
 

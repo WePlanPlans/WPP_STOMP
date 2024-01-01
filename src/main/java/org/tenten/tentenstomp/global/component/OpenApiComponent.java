@@ -39,6 +39,7 @@ public class OpenApiComponent {
         log.info(uri.toUriString());
         ResponseEntity<AreaOpenApiResponse> apiResponseEntity = restTemplate.getForEntity(uri.toUriString(), AreaOpenApiResponse.class);
         AreaOpenApiResponse apiResponse = apiResponseEntity.getBody();
-        return apiResponse.getResponse().getBody().getItems().getItem().stream().map(areaResponse -> new RegionInfo(Long.parseLong(areaCode), Long.parseLong(areaResponse.getCode()), areaResponse.getName())).toList();
+        return null;
+//        return apiResponse.getResponse().getBody().getItems().getItem().stream().map(areaResponse -> new RegionInfo(Long.parseLong(areaCode), Long.parseLong(areaResponse.getCode()), areaResponse.getName())).toList();
     }
 }
