@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tenten.tentenstomp.global.common.constant.NaverMapConstant;
 import org.tenten.tentenstomp.global.component.dto.response.PathInfo;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 
@@ -34,10 +33,10 @@ public class NaverMapComponent {
     private String apiKey;
     @Value("${naver-map.client_id}")
     private String clientId;
-    public Long calculatePrice(String fromLongitude,
-                               String fromLatitude,
-                               String toLongitude,
-                               String toLatitude) {
+    public PathInfo calculatePathInfo(String fromLongitude,
+                                      String fromLatitude,
+                                      String toLongitude,
+                                      String toLatitude) {
         UriComponents uri = UriComponentsBuilder
             .fromUriString(BASE_URL)
             .queryParam("start", fromLongitude + "," + fromLatitude)
@@ -67,7 +66,9 @@ public class NaverMapComponent {
                 Map<String, Object> summary = (Map<String, Object>) traoptimal.get("summary");
                 Integer tollFare = (Integer) summary.get("tollFare");
                 Integer fuelPrice = (Integer) summary.get("fuelPrice");
-                return (long) tollFare + fuelPrice;
+                Integer distance = (Integer) summary.get("distance");
+                Integer duration = (Integer) summary.get("duration");
+                return new PathInfo((long) duration / 60_000 , (double) distance, (long)tollFare + fuelPrice);
             } else {
                 throw new GlobalException("자동차 경로를 조회할 수 없습니다.", CONFLICT);
             }
