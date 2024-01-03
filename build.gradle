@@ -26,8 +26,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // spring web socket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    // rabbit mq
-    implementation 'org.springframework.boot:spring-boot-starter-amqp'
     // h2 database
     implementation 'com.h2database:h2'
     // jpa
@@ -40,7 +38,6 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.amqp:spring-rabbit-test'
 }
 
 tasks.named('test') {
