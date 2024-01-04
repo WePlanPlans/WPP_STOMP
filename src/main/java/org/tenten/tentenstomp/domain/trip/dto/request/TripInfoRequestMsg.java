@@ -1,8 +1,8 @@
-package org.tenten.tentenstomp.domain.trip.dto.response;
+package org.tenten.tentenstomp.domain.trip.dto.request;
 
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 
-public record TripEditResponseMsg(
+public record TripInfoRequestMsg(
     Long tripId,
     String startDate,
     String endDate,

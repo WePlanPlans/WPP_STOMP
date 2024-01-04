@@ -29,7 +29,7 @@ public class RedisSubscriber implements MessageListener {
             // TripEditResponse 객채로 맵핑
             TripResponseMsg tripResponseMsg = objectMapper.readValue(publishMessage, TripResponseMsg.class);
             // Websocket 구독자에게 메시지 Send
-            messagingTemplate.convertAndSend("/sub/trips/" + tripResponseMsg.tripId()+ tripResponseMsg.endPoint(), tripResponseMsg);
+            messagingTemplate.convertAndSend("/sub/trips/" + tripResponseMsg.tripId() + tripResponseMsg.endPoint(), tripResponseMsg);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

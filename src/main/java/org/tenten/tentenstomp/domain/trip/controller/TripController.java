@@ -24,7 +24,7 @@ public class TripController {
 
 
 
-    @MessageMapping("/trips/{tripId}/trip")
+    @MessageMapping("/trips/{tripId}/info")
     public void editPlan(@DestinationVariable String tripId, @Payload TripRequestMsg requestMsg) {
         // 여행 계획을 데이터베이스에 업데이트하고, 업데이트된 계획을 반환합니다.
         tripService.updateTrip(tripId, requestMsg);

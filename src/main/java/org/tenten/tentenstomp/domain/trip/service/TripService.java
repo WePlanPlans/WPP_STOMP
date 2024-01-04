@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripRequestMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripResponseMsg;
+import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.pubsub.RedisPublisher;
 import org.tenten.tentenstomp.domain.trip.pubsub.RedisSubscriber;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
@@ -14,7 +15,6 @@ import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -37,9 +37,10 @@ public class TripService {
 
     @Transactional
     public void updateTrip(String tripId, TripRequestMsg request) {
-        // 여정 업데이트 로직 작성
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
         ChannelTopic topic = getChannelTopic(tripId, request.endPoint());
-        TripResponseMsg tripResponseMsg = new TripResponseMsg(request.tripId(), request.visitDate(), request.endPoint(), null, null, null);
+        TripResponseMsg tripResponseMsg = trip.changeTripInfo(request);
+        tripRepository.save(trip);
         redisPublisher.publish(topic, tripResponseMsg); // 해당 여정의 토픽을 찾아야함,
     }
 
@@ -52,6 +53,7 @@ public class TripService {
         }
         return channelTopicMap.get(channelName);
     }
+
     @Transactional
     public void updateMember(String tripId, TripRequestMsg request) {
         ChannelTopic topic = getChannelTopic(tripId, request.endPoint());
