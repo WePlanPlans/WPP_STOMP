@@ -4,7 +4,7 @@ public record TripResponseMsg(
     Long tripId,
     String visitDate,
     String endPoint,
-    TripEditResponseMsg tripEditMessage,
+    TripInfoResponseMsg tripInfoMessage,
     TripMemberResponseMsg tripMemberMessage,
     TripPlaceResponseMsg tripPlaceMessage) {
 }
