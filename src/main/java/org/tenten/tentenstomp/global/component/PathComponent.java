@@ -2,25 +2,23 @@ package org.tenten.tentenstomp.global.component;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.tenten.tentenstomp.global.component.dto.request.TripPlaceUpdateRequest;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlaceUpdateRequest.TripPlaceInfo;
 import org.tenten.tentenstomp.global.component.dto.response.PathInfo;
+import org.tenten.tentenstomp.global.component.dto.response.TripPathInfo;
 
 @Component
 @RequiredArgsConstructor
 public class PathComponent {
     private final OdsayComponent odsayComponent;
     private final NaverMapComponent naverMapComponent;
-
-    public PathInfo calculatePathByCar(TripPlaceInfo fromPlace, TripPlaceInfo toPlace) {
-        Long price = naverMapComponent.calculatePrice(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
-//        return new PathInfo(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), price);
-        return null;
+  
+    public TripPathInfo calculatePathByCar(TripPlaceInfo fromPlace, TripPlaceInfo toPlace) {
+        PathInfo pathInfo = naverMapComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
+        return new TripPathInfo(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo);
     }
 
-    public PathInfo calculatePathByPublicTransportation(TripPlaceInfo fromPlace, TripPlaceInfo toPlace) {
-        Long price = odsayComponent.calculatePrice(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
-//        return new PathInfo(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), price);
-        return null;
+    public TripPathInfo calculatePathByPublicTransportation(TripPlaceInfo fromPlace, TripPlaceInfo toPlace) {
+        PathInfo pathInfo = odsayComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
+        return new TripPathInfo(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo);
     }
 }
