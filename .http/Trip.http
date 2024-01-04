@@ -1,0 +1,23 @@
+### Trip update
+GET https://api.weplanplans.site/trips
+Content-Type: application/json
+
+{
+  "endPoint" : "/trip",
+  "tripId": 1,
+  "visitDate": "2024-01-03",
+  "tripEditMessage" : {
+    "tripId": 1,
+    "startDate": "2024-01-03",
+    "endDate" : "2024-01-05",
+    "numberOfPeople": 2,
+    "tripName": "success",
+    "tripStatus": "BEFORE",
+    "area": "서울",
+    "subarea": "강남구",
+    "budget": 10000
+  },
+  "tripMemberMessage": null,
+  "tripPlaceMessage": null
+}
+

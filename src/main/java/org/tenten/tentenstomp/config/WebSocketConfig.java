@@ -14,8 +14,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry endpointRegistry) {
-        endpointRegistry.addEndpoint("/ws-stomp") // 소켓 연결 Endpoint 설정
-            .setAllowedOrigins("*").withSockJS(); // Todo 추후 특정 url 변경
+        endpointRegistry.addEndpoint("/ws-stomp")// 소켓 연결 Endpoint 설정
+            .setAllowedOriginPatterns("http://*:8080", "http://*.*.*.*:8080", "https://jxy.me/", "http://localhost:5173",  "https://weplanplans.vercel.app", "https://dev-weplanplans.vercel.app")
+            .withSockJS()
+            .setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.2/sockjs.js"); // Todo 추후 특정 url 변경
 
     }
 
