@@ -1,0 +1,48 @@
+#Content type id
+#관광지 12
+#행사/공연/축제 15
+#여행 코스 25
+#숙박 32
+#쇼핑 38
+#음식점 39
+
+### OPEN API 테스트
+GET https://apis.data.go.kr/B551011/KorService1/searchStay1?serviceKey={{open-api-key}}&numOfRows=5&pageNo=1&_type=json&MobileOS=ETC&MobileApp=TestApp
+
+### open api 행사 정보 조회
+GET https://apis.data.go.kr/B551011/KorService1/searchFestival1?serviceKey={{open-api-key}}&numOfRows=5&pageNo=1&_type=json&MobileOS=ETC&MobileApp=TestApp&listYN=Y&eventStartDate=20170901&areaCode=1&sigunguCode=18
+
+### 지역 코드 조회
+GET https://apis.data.go.kr/B551011/KorService1/areaCode1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp&numOfRows=20&pageNo=1
+
+### 시군구 조회
+GET https://apis.data.go.kr/B551011/KorService1/areaCode1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp&numOfRows=20&pageNo=1&areaCode=1
+
+### 서비스 코드 조회
+GET https://apis.data.go.kr/B551011/KorService1/categoryCode1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp&numOfRows=20&pageNo=1
+
+### 지역기반 관광 정보 조회
+GET https://apis.data.go.kr/B551011/KorService1/areaBasedList1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp&listYN=Y
+    &contentTypeId=39&numOfRows=20&pageNo=1
+
+### 키워드 검색
+GET https://apis.data.go.kr/B551011/KorService1/searchKeyword1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp&listYN=Y
+    &contentTypeId=32&keyword=신라&numOfRows=20&pageNo=1
+
+### 이미지 정보 조회
+GET https://apis.data.go.kr/B551011/KorService1/detailImage1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp
+    &contentId=2716736&imageYN=Y&subImageYN=Y&numOfRows=20&pageNo=1
+
+### 공통 정보 조회
+GET https://apis.data.go.kr/B551011/KorService1/detailCommon1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp
+    &contentId=2465071&contentTypeId=32&defaultYN=Y&firstImageYN=Y&areacodeYN=YoverviewYN=Y&numOfRows=20&pageNo=1
+
+### 반복 정보 조회
+GET https://apis.data.go.kr/B551011/KorService1/detailInfo1?serviceKey={{open-api-key}}&_type=json&MobileOS=ETC&MobileApp=TestApp
+    &contentId=142946&contentTypeId=32&numOfRows=20&pageNo=1
+
+### 광역 지자체 지역 방문자수 집계
+GET https://apis.data.go.kr/B551011/DataLabService/metcoRegnVisitrDDList?MobileOS=ETC&MobileApp=testApp&serviceKey={{open-api-key}}&_type=json&startYmd=20231101&endYmd=20231102&numOfRows=102&pageNo=1
+
+### 일반 지자체 지역 방문자수 집계
+GET https://apis.data.go.kr/B551011/DataLabService/locgoRegnVisitrDDList?MobileOS=ETC&MobileApp=testApp&serviceKey={{open-api-key}}&_type=json&startYmd=20231101&endYmd=20231102&numOfRows=1500&pageNo=1

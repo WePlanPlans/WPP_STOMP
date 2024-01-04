@@ -1,0 +1,30 @@
+### Directions API
+GET https://maps.googleapis.com/maps/api/directions/json
+    ?destination=수서역
+    &origin=경찰병원역
+    &key={{google-map-api-key}}&mode=DRIVE&language=ko
+
+### Routes API
+POST https://routes.googleapis.com/directions/v2:computeRoutes
+Content-Type: application/json
+X-Goog-Api-Key: {{google-map-api-key}}
+X-Goog-FieldMask: routes.*
+
+{
+  "origin": {
+    "address": "정자역"
+  },
+  "destination": {
+    "address": "부산역"
+  },
+  "languageCode": "ko",
+  "travelMode": "TRANSIT",
+  "computeAlternativeRoutes": false,
+  "transitPreferences": {
+    "routingPreference": "FEWER_TRANSFERS",
+    "allowedTravelModes": ["BUS","SUBWAY","TRAIN","LIGHT_RAIL","RAIL"]
+  }
+}
+
+### Geocoding API
+GET https://maps.googleapis.com/maps/api/geocode/json?key={{google-map-api-key}}&language=ko&address=경찰병원역
