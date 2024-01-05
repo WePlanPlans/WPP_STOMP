@@ -3,7 +3,7 @@ GET https://api.weplanplans.site/trips
 Content-Type: application/json
 
 {
-  "endPoint" : "/trip",
+  "endPoint" : "/place",
   "tripId": 1,
   "visitDate": "2024-01-03",
   "tripEditMessage" : {
@@ -18,6 +18,125 @@ Content-Type: application/json
     "budget": 10000
   },
   "tripMemberMessage": null,
-  "tripPlaceMessage": null
+  "tripPlaceMessage": {
+    "places": [
+      {
+        "tripItemId": 1,
+        "seqNum": 1,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.1051573",
+        "latitude": "37.3718141"
+      },
+      {
+        "tripItemId": 2,
+        "seqNum": 2,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "126.9271941",
+        "latitude": "37.5266691"
+      },
+      {
+        "tripItemId": 3,
+        "seqNum": 3,
+        "transportation": "PUBLIC_TRANSPORTATION",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.0283079",
+        "latitude": "37.4981647"
+      },
+      {
+        "tripItemId": 4,
+        "seqNum": 4,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.1051573",
+        "latitude": "37.3718141"
+      },
+      {
+        "tripItemId": 5,
+        "seqNum": 5,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.0283079",
+        "latitude": "37.4981647"
+      }
+    ]
+  }
+}
+
+### test
+POST http://localhost:8080/trips
+Content-Type: application/json
+
+{
+  "endPoint" : "/place",
+  "tripId": 1,
+  "visitDate": "2024-01-03",
+  "tripEditMessage" : {
+    "tripId": 1,
+    "startDate": "2024-01-03",
+    "endDate" : "2024-01-05",
+    "numberOfPeople": 2,
+    "tripName": "success",
+    "tripStatus": "BEFORE",
+    "area": "서울",
+    "subarea": "강남구",
+    "budget": 10000
+  },
+  "tripMemberMessage": null,
+  "tripPlaceMessage": {
+    "places": [
+      {
+        "tripItemId": 1,
+        "seqNum": 1,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.1051573",
+        "latitude": "37.3718141"
+      },
+      {
+        "tripItemId": 2,
+        "seqNum": 2,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "126.9271941",
+        "latitude": "37.5266691"
+      },
+      {
+        "tripItemId": 3,
+        "seqNum": 3,
+        "transportation": "PUBLIC_TRANSPORTATION",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.0283079",
+        "latitude": "37.4981647"
+      },
+      {
+        "tripItemId": 4,
+        "seqNum": 4,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.1051573",
+        "latitude": "37.3718141"
+      },
+      {
+        "tripItemId": 5,
+        "seqNum": 5,
+        "transportation": "CAR",
+        "visitDate": "2023-12-31",
+        "estimatePrice": 10000,
+        "longitude": "127.0283079",
+        "latitude": "37.4981647"
+      }
+    ]
+  }
 }
 

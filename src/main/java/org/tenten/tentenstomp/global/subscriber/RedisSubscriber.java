@@ -1,4 +1,4 @@
-package org.tenten.tentenstomp.domain.trip.pubsub;
+package org.tenten.tentenstomp.global.subscriber;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripResponseMsg;
+import org.tenten.tentenstomp.global.response.GlobalStompResponse;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,12 +24,11 @@ public class RedisSubscriber implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            // redis에서 발행된 데이터를 받아 deserialize
             String publishMessage = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
-            // TripEditResponse 객채로 맵핑
-            TripResponseMsg tripResponseMsg = objectMapper.readValue(publishMessage, TripResponseMsg.class);
-            // Websocket 구독자에게 메시지 Send
-            messagingTemplate.convertAndSend("/sub/trips/" + tripResponseMsg.tripId() + tripResponseMsg.endPoint(), tripResponseMsg);
+            String endPointUrl = (String) redisTemplate.getStringSerializer().deserialize(message.getChannel());
+            log.info(endPointUrl);
+            GlobalStompResponse<?> dataResponse = objectMapper.readValue(publishMessage, GlobalStompResponse.class);
+            messagingTemplate.convertAndSend("/sub"+endPointUrl, dataResponse);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
