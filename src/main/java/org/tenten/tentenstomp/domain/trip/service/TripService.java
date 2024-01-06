@@ -8,8 +8,8 @@ import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
-import org.tenten.tentenstomp.global.common.constant.EndPointConstant;
-import org.tenten.tentenstomp.global.publisher.RedisPublisher;
+import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
+import org.tenten.tentenstomp.global.messaging.redis.publisher.RedisPublisher;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
 import org.tenten.tentenstomp.global.response.GlobalStompResponse;
 import org.tenten.tentenstomp.global.util.RedisChannelUtil;
@@ -28,6 +28,7 @@ public class TripService {
     private final RedisChannelUtil redisChannelUtil;
     private final TripItemRepository tripItemRepository;
     private final RedisPublisher redisPublisher;
+    private final KafkaProducer kafkaProducer;
 
     private final Map<String, HashSet<Long>> connectedMemberMap = new HashMap<>();
 //    private final PathComponent pathComponent;

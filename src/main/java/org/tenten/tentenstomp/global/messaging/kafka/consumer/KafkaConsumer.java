@@ -1,4 +1,4 @@
-package org.tenten.tentenstomp.global.consumer;
+package org.tenten.tentenstomp.global.messaging.kafka.consumer;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

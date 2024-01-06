@@ -7,7 +7,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.RestController;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
-import org.tenten.tentenstomp.global.producer.KafkaProducer;
+import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,5 +45,4 @@ public class TripController {
     public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
         tripService.disconnectMember(tripId, memberDisconnectMsg);
     }
-
 }

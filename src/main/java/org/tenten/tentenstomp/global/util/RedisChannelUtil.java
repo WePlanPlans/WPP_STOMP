@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
-import org.tenten.tentenstomp.global.subscriber.RedisSubscriber;
+import org.tenten.tentenstomp.global.messaging.redis.subscriber.RedisSubscriber;
 
 import java.util.HashMap;
 import java.util.Map;

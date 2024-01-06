@@ -1,4 +1,4 @@
-package org.tenten.tentenstomp.global.subscriber;
+package org.tenten.tentenstomp.global.messaging.redis.subscriber;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

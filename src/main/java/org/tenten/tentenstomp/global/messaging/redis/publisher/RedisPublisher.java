@@ -1,4 +1,4 @@
-package org.tenten.tentenstomp.global.publisher;
+package org.tenten.tentenstomp.global.messaging.redis.publisher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
