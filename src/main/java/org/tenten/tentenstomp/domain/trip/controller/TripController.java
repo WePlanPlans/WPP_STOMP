@@ -5,8 +5,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.RestController;
-import org.tenten.tentenstomp.domain.trip.dto.request.TripRequestMsg;
-import org.tenten.tentenstomp.domain.trip.pubsub.RedisPublisher;
+import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
 import org.tenten.tentenstomp.global.producer.KafkaProducer;
 
@@ -46,4 +45,5 @@ public class TripController {
     public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
         tripService.disconnectMember(tripId, memberDisconnectMsg);
     }
+
 }
