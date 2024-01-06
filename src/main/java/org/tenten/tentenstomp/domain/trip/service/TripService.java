@@ -55,8 +55,8 @@ public class TripService {
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
         // TODO : /sub/{tripId}/tripItems/{visitDate}
         // TODO : /sub/{tripId}/path/{visitDate}
-        ChannelTopic tripItemTopic = redisChannelUtil.getChannelTopic(tripId, tripItemAddMsg.newTripItems().get(0).visitDate(), TRIP_ITEM);
-        ChannelTopic pathTopic = redisChannelUtil.getChannelTopic(tripId, tripItemAddMsg.newTripItems().get(0).visitDate(), PATH);
+        ChannelTopic tripItemTopic = redisChannelUtil.getChannelTopic(tripId, orderUpdateMsg.visitDate(), TRIP_ITEM);
+        ChannelTopic pathTopic = redisChannelUtil.getChannelTopic(tripId, orderUpdateMsg.visitDate(), PATH);
 
 
     }
