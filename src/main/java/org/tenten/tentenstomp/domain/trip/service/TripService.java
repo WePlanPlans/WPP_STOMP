@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripPathMsg;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
@@ -14,11 +17,12 @@ import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
 import org.tenten.tentenstomp.global.response.GlobalStompResponse;
 import org.tenten.tentenstomp.global.util.RedisChannelUtil;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.tenten.tentenstomp.global.common.constant.EndPointConstant.*;
+import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,40 +40,67 @@ public class TripService {
     @Transactional
     public void updateTrip(String tripId, TripUpdateMsg tripUpdateMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        ChannelTopic topic = redisChannelUtil.getChannelTopic(tripId, TRIP_INFO);
 
         TripInfoMsg tripResponseMsg = trip.changeTripInfo(tripUpdateMsg);
         tripRepository.save(trip);
-        redisPublisher.publish(topic, GlobalStompResponse.ok(tripResponseMsg)); // 해당 여정의 토픽을 찾아야함,
+
+        kafkaProducer.send(TRIP_INFO, tripResponseMsg);
     }
     @Transactional
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        ChannelTopic tripItemTopic = redisChannelUtil.getChannelTopic(tripId, tripItemAddMsg.newTripItems().get(0).visitDate(), TRIP_ITEM);
-        ChannelTopic pathTopic = redisChannelUtil.getChannelTopic(tripId, tripItemAddMsg.newTripItems().get(0).visitDate(), PATH);
+        /*
+        비즈니스 로직
+         */
 
-        // TODO : /sub/{tripId}/tripItems/{visitDate}
-        // TODO : /sub/{tripId}/path/{visitDate}
+        TripItemMsg tripItemMsg = new TripItemMsg(
+            Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()).toString(), null
+        );
+        TripPathMsg tripPathMsg = new TripPathMsg(
+            Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()).toString(), null
+        );
 
+        kafkaProducer.send(TRIP_ITEM, tripItemMsg);
+        kafkaProducer.send(PATH, tripPathMsg);
     }
     @Transactional
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
-        // TODO : /sub/{tripId}/tripItems/{visitDate}
-        // TODO : /sub/{tripId}/path/{visitDate}
-        ChannelTopic tripItemTopic = redisChannelUtil.getChannelTopic(tripId, orderUpdateMsg.visitDate(), TRIP_ITEM);
-        ChannelTopic pathTopic = redisChannelUtil.getChannelTopic(tripId, orderUpdateMsg.visitDate(), PATH);
+        /*
+        비즈니스 로직
+         */
 
+        TripItemMsg tripItemMsg = new TripItemMsg(
+            Long.parseLong(tripId), LocalDate.parse(orderUpdateMsg.visitDate()).toString(), null
+        );
+        TripPathMsg tripPathMsg = new TripPathMsg(
+            Long.parseLong(tripId), LocalDate.parse(orderUpdateMsg.visitDate()).toString(), null
+        );
 
+        kafkaProducer.send(TRIP_ITEM, tripItemMsg);
+        kafkaProducer.send(PATH, tripPathMsg);
     }
+
     @Transactional(readOnly = true)
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
-        // TODO: /sub/{tripId}/connectedMember
-        ChannelTopic memberTopic = redisChannelUtil.getChannelTopic(tripId, MEMBER);
+        /*
+        비즈니스 로직
+         */
+        TripMemberMsg tripMemberMsg = new TripMemberMsg(
+            Long.parseLong(tripId), null
+        );
+
+        kafkaProducer.send(MEMBER, tripMemberMsg);
     }
     @Transactional(readOnly = true)
     public void disconnectMember(String tripId, MemberDisconnectMsg memberDisconnectMsg) {
-        // TODO: /sub/{tripId}/connectedMember
-        ChannelTopic memberTopic = redisChannelUtil.getChannelTopic(tripId, MEMBER);
+        /*
+        비즈니스 로직
+         */
+        TripMemberMsg tripMemberMsg = new TripMemberMsg(
+            Long.parseLong(tripId), null
+        );
+
+        kafkaProducer.send(MEMBER, tripMemberMsg);
     }
 
 

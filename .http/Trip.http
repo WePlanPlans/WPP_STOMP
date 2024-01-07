@@ -14,7 +14,7 @@ Content-Type: application/json
     "tripName": "success",
     "tripStatus": "BEFORE",
     "area": "서울",
-    "subarea": "강남구",
+    "subarea": "송파구",
     "budget": 10000
   },
   "tripMemberMessage": null,
