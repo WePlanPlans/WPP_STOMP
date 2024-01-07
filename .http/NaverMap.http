@@ -1,5 +1,5 @@
 ### 주소 좌표값 변환 api
-GET https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=부산
+GET https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=강남대로 396
 X-NCP-APIGW-API-KEY-ID: {{naver-map-client-id}}
 X-NCP-APIGW-API-KEY: {{naver-map-client-secret}}
 

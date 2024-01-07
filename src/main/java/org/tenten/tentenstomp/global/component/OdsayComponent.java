@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tenten.tentenstomp.global.component.dto.response.PathInfo;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.PathInfo;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 
 import java.util.List;
@@ -32,9 +33,9 @@ public class OdsayComponent {
     private final ObjectMapper objectMapper;
     private final String BASE_URL = "https://api.odsay.com/v1/api/searchPubTransPathT";
     public PathInfo calculatePathInfo(String fromLongitude,
-                                      String fromLatitude,
-                                      String toLongitude,
-                                      String toLatitude) {
+                                                      String fromLatitude,
+                                                      String toLongitude,
+                                                      String toLatitude) {
         UriComponents uri = UriComponentsBuilder
             .fromUriString(BASE_URL)
             .queryParam("apiKey", apiKey)
@@ -43,7 +44,7 @@ public class OdsayComponent {
             .queryParam("EX", toLongitude)
             .queryParam("EY", toLatitude)
             .build();
-        log.info(uri.toUriString());
+//        log.info(uri.toUriString());
         HttpHeaders header = new HttpHeaders();
         HttpEntity request = new HttpEntity(header);
         ResponseEntity<String> response = restTemplate.exchange(uri.toUri(), GET, request, String.class);
@@ -63,7 +64,8 @@ public class OdsayComponent {
                 throw new GlobalException("대중교통 경로를 조회할 수 없습니다.", CONFLICT);
             }
         } catch (JsonProcessingException jsonProcessingException) {
-            throw new GlobalException("대중교통 경로 응답 파일을 읽어오는 과정에서 오류가 발생했습니다.", CONFLICT);
+            log.info("대중교통 경로 응답 파일을 읽어오는 과정에서 오류가 발생했습니다.");
+            return null;
         } catch (Exception e) {
             log.info(e.getMessage());
             return null;

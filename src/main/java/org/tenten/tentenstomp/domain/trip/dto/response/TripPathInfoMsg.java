@@ -1,8 +1,8 @@
-package org.tenten.tentenstomp.global.component.dto.response;
+package org.tenten.tentenstomp.domain.trip.dto.response;
 
 import org.tenten.tentenstomp.global.common.enums.Transportation;
 
-public record TripPathInfo(
+public record TripPathInfoMsg(
     Long fromSeqNum,
     Long toSeqNum,
     String fromLongitude,
@@ -11,5 +11,11 @@ public record TripPathInfo(
     String toLatitude,
     Transportation transportation,
     PathInfo pathInfo
+
 ) {
+    public record PathInfo(
+        Long price,
+        Double totalDistance,
+        Long totalTime
+    ){}
 }

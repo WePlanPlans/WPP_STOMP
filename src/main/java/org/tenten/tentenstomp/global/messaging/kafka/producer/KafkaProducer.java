@@ -1,4 +1,4 @@
-package org.tenten.tentenstomp.global.producer;
+package org.tenten.tentenstomp.global.messaging.kafka.producer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
