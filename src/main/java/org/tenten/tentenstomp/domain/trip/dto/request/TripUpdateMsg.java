@@ -2,8 +2,7 @@ package org.tenten.tentenstomp.domain.trip.dto.request;
 
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 
-public record TripInfoRequestMsg(
-    Long tripId,
+public record TripUpdateMsg(
     String startDate,
     String endDate,
     Long numberOfPeople,

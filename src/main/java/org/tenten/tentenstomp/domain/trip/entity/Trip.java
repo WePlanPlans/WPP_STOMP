@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.tenten.tentenstomp.domain.trip.dto.request.TripRequestMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoResponseMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripResponseMsg;
+import org.tenten.tentenstomp.domain.trip.dto.request.TripUpdateMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
 import org.tenten.tentenstomp.global.common.BaseTimeEntity;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 
@@ -52,25 +51,17 @@ public class Trip extends BaseTimeEntity {
     @OneToMany(mappedBy = "trip", fetch = LAZY, cascade = REMOVE)
     private final List<TripLikedItem> tripLikedItems = new ArrayList<>();
 
-    public TripResponseMsg changeTripInfo(TripRequestMsg request) {
-        this.startDate = LocalDate.parse(request.tripInfoMessage().startDate());
-        this.endDate = LocalDate.parse(request.tripInfoMessage().endDate());
-        this.numberOfPeople = request.tripInfoMessage().numberOfPeople();
-        this.tripName = request.tripInfoMessage().tripName();
-        this.tripStatus = request.tripInfoMessage().tripStatus();
-        this.area = request.tripInfoMessage().area();
-        this.subarea = request.tripInfoMessage().subarea();
-        this.budget = request.tripInfoMessage().budget();
+    public TripInfoMsg changeTripInfo(TripUpdateMsg request) {
+        this.startDate = LocalDate.parse(request.startDate());
+        this.endDate = LocalDate.parse(request.endDate());
+        this.numberOfPeople = request.numberOfPeople();
+        this.tripName = request.tripName();
+        this.tripStatus = request.tripStatus();
+        this.area = request.area();
+        this.subarea = request.subarea();
+        this.budget = request.budget();
 
-        return new TripResponseMsg(
-            request.tripId(), request.visitDate(), request.endPoint(),
-            new TripInfoResponseMsg(
-                request.tripId(), request.tripInfoMessage().startDate(),
-                request.tripInfoMessage().endDate(), request.tripInfoMessage().numberOfPeople(),
-                request.tripInfoMessage().tripName(), request.tripInfoMessage().tripStatus(),
-                request.tripInfoMessage().area(), request.tripInfoMessage().subarea(),
-                request.tripInfoMessage().budget()
-            ), null, null
-        );
+        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), this.getTripStatus(),
+            this.getArea(), this.getSubarea(), this.getBudget());
     }
 }
