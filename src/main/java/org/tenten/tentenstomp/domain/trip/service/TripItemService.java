@@ -38,7 +38,7 @@ public class TripItemService {
         );
 
         kafkaProducer.send(TRIP_ITEM, tripItemMsg);
-
+        // TODO : budget
     }
     @Transactional
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
@@ -67,6 +67,8 @@ public class TripItemService {
         kafkaProducer.send(TRIP_ITEM, tripItemMsgToNewDate);
         kafkaProducer.send(PATH, tripPathMsgToPastDate);
         kafkaProducer.send(PATH, tripPathMsgToNewDate);
+        // TODO : budget
+
     }
     @Transactional
     public void deleteTripItem(String tripItemId) {
@@ -84,6 +86,7 @@ public class TripItemService {
 
         kafkaProducer.send(TRIP_ITEM, tripItemMsg);
         kafkaProducer.send(PATH, tripPathMsg);
+        // TODO : budget
 
     }
 }

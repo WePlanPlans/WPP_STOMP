@@ -64,4 +64,9 @@ public class Trip extends BaseTimeEntity {
         return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), this.getTripStatus(),
             this.getArea(), this.getSubarea(), this.getBudget());
     }
+
+    public TripInfoMsg toTripInfo() {
+        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), this.getTripStatus(),
+            this.getArea(), this.getSubarea(), this.getBudget());
+    }
 }

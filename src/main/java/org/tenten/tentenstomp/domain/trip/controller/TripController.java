@@ -45,4 +45,14 @@ public class TripController {
     public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
         tripService.disconnectMember(tripId, memberDisconnectMsg);
     }
+
+    @MessageMapping("/trips/{tripId}/enterMember")
+    public void enterMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
+        tripService.enterMember(tripId, memberConnectMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/getPathAndItems")
+    public void getPathAndItems(@DestinationVariable String tripId, @Payload PathAndItemRequestMsg pathAndItemRequestMsg) {
+        tripService.getPathAndItems(tripId, pathAndItemRequestMsg);
+    }
 }

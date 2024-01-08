@@ -1,17 +1,11 @@
 package org.tenten.tentenstomp.global.messaging.kafka.consumer;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.internals.Topic;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripUpdateMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripPathMsg;
-import org.tenten.tentenstomp.global.common.constant.TopicConstant;
+import org.tenten.tentenstomp.domain.trip.dto.response.*;
 import org.tenten.tentenstomp.global.response.GlobalStompResponse;
 import org.tenten.tentenstomp.global.util.TopicUtil;
 
@@ -50,5 +44,11 @@ public class KafkaConsumer {
     @KafkaListener(topics = MEMBER, groupId = GROUP_ID_CONFIG)
     public void updateConnectedTripMember(TripMemberMsg tripMemberMsg) {
         messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripMemberMsg.tripId(), MEMBER), GlobalStompResponse.ok(tripMemberMsg));
+    }
+
+    @KafkaListener(topics = BUDGET, groupId = GROUP_ID_CONFIG)
+    public void updateBudget(TripBudgetMsg tripBudgetMsg) {
+        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripBudgetMsg.tripId(), BUDGET), GlobalStompResponse.ok(tripBudgetMsg));
+
     }
 }

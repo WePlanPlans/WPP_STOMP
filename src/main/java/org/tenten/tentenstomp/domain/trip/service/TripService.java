@@ -5,10 +5,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripPathMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.*;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
@@ -42,9 +39,13 @@ public class TripService {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
         TripInfoMsg tripResponseMsg = trip.changeTripInfo(tripUpdateMsg);
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
+            trip.getId(), null, null
+        );
         tripRepository.save(trip);
 
         kafkaProducer.send(TRIP_INFO, tripResponseMsg);
+        kafkaProducer.send(BUDGET, tripBudgetMsg);
     }
     @Transactional
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
@@ -59,9 +60,14 @@ public class TripService {
         TripPathMsg tripPathMsg = new TripPathMsg(
             Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()).toString(), null
         );
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
+            trip.getId(), null, null
+        );
 
         kafkaProducer.send(TRIP_ITEM, tripItemMsg);
         kafkaProducer.send(PATH, tripPathMsg);
+        kafkaProducer.send(BUDGET, tripBudgetMsg);
+
     }
     @Transactional
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
@@ -75,9 +81,14 @@ public class TripService {
         TripPathMsg tripPathMsg = new TripPathMsg(
             Long.parseLong(tripId), LocalDate.parse(orderUpdateMsg.visitDate()).toString(), null
         );
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
+            Long.parseLong(tripId), null, null
+        );
 
         kafkaProducer.send(TRIP_ITEM, tripItemMsg);
         kafkaProducer.send(PATH, tripPathMsg);
+        kafkaProducer.send(BUDGET, tripBudgetMsg);
+
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +114,39 @@ public class TripService {
         kafkaProducer.send(MEMBER, tripMemberMsg);
     }
 
+    @Transactional(readOnly = true)
+    public void enterMember(String tripId, MemberConnectMsg memberConnectMsg) {
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+
+        TripInfoMsg tripResponseMsg = trip.toTripInfo();
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
+            trip.getId(), null, null
+        );
+        TripItemMsg tripItemMsg = new TripItemMsg(
+            Long.parseLong(tripId), trip.getStartDate().toString(), null
+        );
+        TripPathMsg tripPathMsg = new TripPathMsg(
+            Long.parseLong(tripId), trip.getStartDate().toString(),  null
+        );
+
+        kafkaProducer.send(TRIP_INFO, tripResponseMsg);
+        kafkaProducer.send(TRIP_ITEM, tripItemMsg);
+        kafkaProducer.send(PATH, tripPathMsg);
+        kafkaProducer.send(BUDGET, tripBudgetMsg);
+    }
+    @Transactional(readOnly = true)
+    public void getPathAndItems(String tripId, PathAndItemRequestMsg pathAndItemRequestMsg) {
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
 
+        TripItemMsg tripItemMsg = new TripItemMsg(
+            Long.parseLong(tripId), pathAndItemRequestMsg.visitDate(), null
+        );
+        TripPathMsg tripPathMsg = new TripPathMsg(
+            Long.parseLong(tripId), pathAndItemRequestMsg.visitDate(),  null
+        );
+
+        kafkaProducer.send(TRIP_ITEM, tripItemMsg);
+        kafkaProducer.send(PATH, tripPathMsg);
+    }
 }
