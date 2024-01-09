@@ -19,8 +19,8 @@ public class TripLikedItemPreference {
     @Column(name = "tripLikedItemPreferenceId")
     private Long id;
 
-    private Boolean liked;
-    private Boolean disliked;
+    private Boolean prefer;
+    private Boolean notPrefer;
 
     @ManyToOne
     @JoinColumn(name = "tripMemberId")

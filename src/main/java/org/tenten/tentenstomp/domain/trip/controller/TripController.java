@@ -21,21 +21,6 @@ public class TripController {
         kafkaProducer.send("kafka", tripUpdateMsg);
     }
 
-    @MessageMapping("/trips/{tripId}/info")
-    public void editPlan(@DestinationVariable String tripId, @Payload TripUpdateMsg tripUpdateMsg) {
-        tripService.updateTrip(tripId, tripUpdateMsg);
-    }
-
-    @MessageMapping("/trips/{tripId}/addTripItems")
-    public void addTripItem(@DestinationVariable String tripId, @Payload TripItemAddMsg tripItemAddMsg) {
-        tripService.addTripItem(tripId, tripItemAddMsg);
-    }
-
-    @MessageMapping("/trips/{tripId}/updateTripItemOrder")
-    public void updateTripItemOrder(@DestinationVariable String tripId, @Payload TripItemOrderUpdateMsg orderUpdateMsg) {
-        tripService.updateTripItemOrder(tripId, orderUpdateMsg);
-    }
-
     @MessageMapping("/trips/{tripId}/connectMember")
     public void connectMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
         tripService.connectMember(tripId, memberConnectMsg);
@@ -49,6 +34,21 @@ public class TripController {
     @MessageMapping("/trips/{tripId}/enterMember")
     public void enterMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
         tripService.enterMember(tripId, memberConnectMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/info")
+    public void editPlan(@DestinationVariable String tripId, @Payload TripUpdateMsg tripUpdateMsg) {
+        tripService.updateTrip(tripId, tripUpdateMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/addTripItems")
+    public void addTripItem(@DestinationVariable String tripId, @Payload TripItemAddMsg tripItemAddMsg) {
+        tripService.addTripItem(tripId, tripItemAddMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/updateTripItemOrder")
+    public void updateTripItemOrder(@DestinationVariable String tripId, @Payload TripItemOrderUpdateMsg orderUpdateMsg) {
+        tripService.updateTripItemOrder(tripId, orderUpdateMsg);
     }
 
     @MessageMapping("/trips/{tripId}/getPathAndItems")

@@ -4,15 +4,15 @@ import org.tenten.tentenstomp.global.common.enums.Transportation;
 
 import java.time.LocalDate;
 
-public record TripItemInfoMsg(
+public record TripItemInfo(
     Long tripItemId,
     Long tourItemId,
     String name,
     String thumbnailUrl,
-    String category,
+    Long contentTypeId,
     Transportation transportation,
     Long seqNum,
-    String visitDate,
+    LocalDate visitDate,
     Long price
 ) {
 

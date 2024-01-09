@@ -9,6 +9,7 @@ import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.PathInfo;
 import org.tenten.tentenstomp.global.common.annotation.GetExecutionTime;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.request.PathCalculateRequest;
+import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +36,17 @@ public class PathComponent {
         return new TripPathInfoMsg(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo);
     }
     @GetExecutionTime
-    public List<TripPathInfoMsg> getTripPath(List<TripPlace> tripPlaceList) {
+    public TripPathCalculationResult getTripPath(List<TripPlace> tripPlaceList) {
         List<PathCalculateRequest> pathCalculateRequests = toPathCalculateRequest(tripPlaceList);
-        return pathCalculateRequests.stream().flatMap(pathCalculateRequest -> Stream.of(calculatePath(pathCalculateRequest.from(), pathCalculateRequest.to()))).toList();
+        long priceSum = 0L;
+        List<TripPathInfoMsg> pathInfoMsgs = new ArrayList<>();
+        for (PathCalculateRequest calculateRequest : pathCalculateRequests) {
+            TripPathInfoMsg tripPathInfoMsg = calculatePath(calculateRequest.from(), calculateRequest.to());
+            pathInfoMsgs.add(tripPathInfoMsg);
+            priceSum += tripPathInfoMsg.pathInfo().price();
+        }
+        return new TripPathCalculationResult(priceSum, pathInfoMsgs);
+
     }
 
 
