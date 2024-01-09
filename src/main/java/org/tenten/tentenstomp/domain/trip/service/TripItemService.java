@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemPriceUpdateMsg;
+import org.tenten.tentenstomp.domain.trip.dto.request.TripItemTransportationUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemVisitDateUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripPathMsg;
@@ -87,6 +88,10 @@ public class TripItemService {
         kafkaProducer.send(TRIP_ITEM, tripItemMsg);
         kafkaProducer.send(PATH, tripPathMsg);
         // TODO : budget
+
+    }
+    @Transactional
+    public void updateTripItemTransportation(String tripItemId, TripItemTransportationUpdateMsg tripItemTransportationUpdateMsg) {
 
     }
 }
