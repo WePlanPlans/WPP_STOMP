@@ -11,3 +11,10 @@ Origin: https://weplanplans.site
 GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=127.1051573&SY=37.3718141&EX=227.124206&EY=37.495701
 Origin: https://weplanplans.site
 
+### 대중교통 길 찾기
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=128.5163479914&SY=36.5390674494&EX=128.5163479914&EY=36.5390674494
+Origin: https://weplanplans.site
+
+### 대중교통 길 찾기
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=128.5163479914&SY=36.5390674494&EX=128.3383767680&EY=38.0731872541
+Origin: https://weplanplans.site

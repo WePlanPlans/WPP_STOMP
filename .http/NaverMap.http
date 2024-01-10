@@ -5,6 +5,6 @@ X-NCP-APIGW-API-KEY: {{naver-map-client-secret}}
 
 
 ### 자동차 경로 계산 api
-GET https://naveropenapi.apigw.ntruss.com/map-direction-15/v1/driving?start=127.1058342,37.359708&goal=126.9284261,37.5258975
+GET https://naveropenapi.apigw.ntruss.com/map-direction-15/v1/driving?start=128.5175868107,36.5376537450&goal=128.5163479914,36.5390674494
 X-NCP-APIGW-API-KEY-ID: {{naver-map-client-id}}
 X-NCP-APIGW-API-KEY: {{naver-map-client-secret}}

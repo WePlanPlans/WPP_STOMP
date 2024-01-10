@@ -21,6 +21,21 @@ public class TripController {
         kafkaProducer.send("kafka", tripUpdateMsg);
     }
 
+    @MessageMapping("/trips/{tripId}/connectMember")
+    public void connectMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
+        tripService.connectMember(tripId, memberConnectMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/disconnectMember")
+    public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
+        tripService.disconnectMember(tripId, memberDisconnectMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/enterMember")
+    public void enterMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
+        tripService.enterMember(tripId, memberConnectMsg);
+    }
+
     @MessageMapping("/trips/{tripId}/info")
     public void editPlan(@DestinationVariable String tripId, @Payload TripUpdateMsg tripUpdateMsg) {
         tripService.updateTrip(tripId, tripUpdateMsg);
@@ -36,13 +51,8 @@ public class TripController {
         tripService.updateTripItemOrder(tripId, orderUpdateMsg);
     }
 
-    @MessageMapping("/trips/{tripId}/connectMember")
-    public void connectMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
-        tripService.connectMember(tripId, memberConnectMsg);
-    }
-
-    @MessageMapping("/trips/{tripId}/disconnectMember")
-    public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
-        tripService.disconnectMember(tripId, memberDisconnectMsg);
+    @MessageMapping("/trips/{tripId}/getPathAndItems")
+    public void getPathAndItems(@DestinationVariable String tripId, @Payload PathAndItemRequestMsg pathAndItemRequestMsg) {
+        tripService.getPathAndItems(tripId, pathAndItemRequestMsg);
     }
 }
