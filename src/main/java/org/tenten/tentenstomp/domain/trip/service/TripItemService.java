@@ -17,8 +17,6 @@ import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
-import org.tenten.tentenstomp.global.messaging.redis.publisher.RedisPublisher;
-import org.tenten.tentenstomp.global.util.RedisChannelUtil;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ import java.util.Map;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
-import static org.tenten.tentenstomp.global.common.constant.TopicConstant.BUDGET;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +58,7 @@ public class TripItemService {
         List<TripItem> newDateTripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), newDate);
 
         Long oldSeqNum = tripItem.getSeqNum();
-        Long newSeqNum = (long) newDateTripItems.size();
+        Long newSeqNum = (long) newDateTripItems.size()+1;
         List<TripItem> newPastDateTripItems = new ArrayList<>();
         for (TripItem pastDateTripItem : pastDateTripItems) {
             if (pastDateTripItem.getId().equals(tripItem.getId())) {
@@ -80,9 +77,9 @@ public class TripItemService {
         TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newPastDateTripItems));
         TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems));
 
-        Map<String, Long> tripPathPriceMap = trip.getTripPathPriceMap();
-        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(pastDate.toString(), 0L), pastDateTripPath.pathPriceSum());
-        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(newDate.toString(), 0L), newDateTripPath.pathPriceSum());
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(pastDate.toString(), 0), pastDateTripPath.pathPriceSum());
+        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(newDate.toString(), 0), newDateTripPath.pathPriceSum());
         tripPathPriceMap.put(pastDate.toString(), pastDateTripPath.pathPriceSum());
         tripPathPriceMap.put(newDate.toString(), newDateTripPath.pathPriceSum());
         tripRepository.save(trip);
@@ -118,8 +115,8 @@ public class TripItemService {
 
         tripItemRepository.delete(tripItem);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems));
-        Map<String, Long> tripPathPriceMap = trip.getTripPathPriceMap();
-        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0L), tripPath.pathPriceSum());
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
         tripRepository.save(trip);
 
@@ -147,8 +144,8 @@ public class TripItemService {
         tripItemRepository.save(tripItem);
 
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems));
-        Map<String, Long> tripPathPriceMap = trip.getTripPathPriceMap();
-        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0L), tripPath.pathPriceSum());
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
         tripRepository.save(trip);
 

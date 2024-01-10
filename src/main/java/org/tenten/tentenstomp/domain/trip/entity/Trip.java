@@ -47,10 +47,10 @@ public class Trip extends BaseTimeEntity {
     @ColumnDefault("0")
     private Long tripItemPriceSum;
     @ColumnDefault("0")
-    private Long transportationPriceSum;
+    private Integer transportationPriceSum;
     @Convert(converter = MapConverter.class)
     @Column(columnDefinition = "JSON")
-    private Map<String, Long> tripPathPriceMap;
+    private Map<String, Integer> tripPathPriceMap;
 
     @OneToMany(mappedBy = "trip", fetch = LAZY, cascade = REMOVE)
     private final List<TripMember> tripMembers = new ArrayList<>();
@@ -80,7 +80,7 @@ public class Trip extends BaseTimeEntity {
             this.getArea(), this.getSubarea(), this.getBudget());
     }
 
-    public void updateTransportationPriceSum(Long oldVisitDateTransportationPriceSum, Long newVisitDateTransportationPriceSum) {
+    public void updateTransportationPriceSum(Integer oldVisitDateTransportationPriceSum, Integer newVisitDateTransportationPriceSum) {
         this.transportationPriceSum -= oldVisitDateTransportationPriceSum;
         this.transportationPriceSum += newVisitDateTransportationPriceSum;
     }

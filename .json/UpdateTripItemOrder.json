@@ -1,0 +1,21 @@
+{
+  "visitDate": "2024-01-03",
+  "tripItemOrder": [
+    {
+      "tripItemId": 1,
+      "seqNum": 3
+    },
+    {
+      "tripItemId": 3,
+      "seqNum": 4
+    },
+    {
+      "tripItemId": 4,
+      "seqNum": 1
+    },
+    {
+      "tripItemId": 6,
+      "seqNum": 2
+    }
+  ]
+}

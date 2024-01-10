@@ -5,7 +5,7 @@ import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
 import java.util.List;
 
 public record TripPathCalculationResult(
-    Long pathPriceSum,
+    Integer pathPriceSum,
     List<TripPathInfoMsg> tripPathInfoMsgs
 ) {
 }

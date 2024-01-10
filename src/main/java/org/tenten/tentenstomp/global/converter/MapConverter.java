@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 import java.util.Map;
 
 @Converter
-public class MapConverter implements AttributeConverter<Map, String> {
+public class MapConverter implements AttributeConverter<Map<String, Integer>, String> {
     protected final ObjectMapper objectMapper;
 
     public MapConverter() {
@@ -28,11 +28,11 @@ public class MapConverter implements AttributeConverter<Map, String> {
         }    }
 
     @Override
-    public Map<String, Long> convertToEntityAttribute(String s) {
+    public Map<String, Integer> convertToEntityAttribute(String s) {
 
         if (StringUtils.hasText(s)) {
             try {
-                return objectMapper.readValue(s, Map.class); // 5
+                return (Map<String, Integer>) objectMapper.readValue(s, Map.class); // 5
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
