@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.*;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.PathInfo;
 import static org.tenten.tentenstomp.global.common.constant.NaverMapConstant.NAVER_MAP_API_KEY_HEADER;
 import static org.tenten.tentenstomp.global.common.constant.NaverMapConstant.NAVER_MAP_CLIENT_ID_HEADER;
 
@@ -69,7 +70,7 @@ public class NaverMapComponent {
                 Integer fuelPrice = (Integer) summary.get("fuelPrice");
                 Integer distance = (Integer) summary.get("distance");
                 Integer duration = (Integer) summary.get("duration");
-                return new PathInfo((long) duration / 60_000 , (double) distance, (long)tollFare + fuelPrice);
+                return new PathInfo(tollFare + fuelPrice , (double) distance, (long) duration / 60_000);
             } else {
                 throw new GlobalException("자동차 경로를 조회할 수 없습니다.", CONFLICT);
             }

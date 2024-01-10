@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.PathInfo;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 
@@ -56,10 +55,10 @@ public class OdsayComponent {
                 List<Map<String, Object>> pathList = (List<Map<String, Object>>) resultMap.get("path");
                 Map<String, Object> path = pathList.get(0);
                 Map<String, Object> pathInfo = (Map<String, Object>) path.get("info");
-                Integer payment = (Integer) pathInfo.get("payment");
-                Double distance = (Double) pathInfo.get("totalDistance");
+                Integer payment = (Integer) pathInfo.get("totalPayment");
+                Double distance = Double.valueOf(Integer.toString((Integer) pathInfo.get("totalDistance")));
                 Integer totalTime = (Integer) pathInfo.get("totalTime");
-                return new PathInfo((long) totalTime, distance, (long) payment);
+                return new PathInfo( payment, distance, (long) totalTime);
             } else {
                 throw new GlobalException("대중교통 경로를 조회할 수 없습니다.", CONFLICT);
             }

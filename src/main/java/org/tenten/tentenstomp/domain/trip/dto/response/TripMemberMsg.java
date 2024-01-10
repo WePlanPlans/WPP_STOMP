@@ -4,6 +4,7 @@ import java.util.List;
 
 public record TripMemberMsg(
     Long tripId,
-    List<TripMemberInfoMsg> connectedMembers
+    List<TripMemberInfoMsg> connectedMembers,
+    List<TripMemberInfoMsg> tripMembers
 ) {
 }

@@ -14,7 +14,7 @@ public record TripPathInfoMsg(
 
 ) {
     public record PathInfo(
-        Long price,
+        Integer price,
         Double totalDistance,
         Long totalTime
     ){}
