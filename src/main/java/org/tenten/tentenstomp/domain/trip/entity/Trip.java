@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 import static jakarta.persistence.CascadeType.REMOVE;
-import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static jakarta.persistence.InheritanceType.JOINED;
+import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
 
 @Entity
 @Getter
@@ -39,8 +39,6 @@ public class Trip extends BaseTimeEntity {
     private LocalDate endDate;
     private String area;
     private String subarea;
-    @Enumerated(STRING)
-    private TripStatus tripStatus;
     private Boolean isDeleted;
     private String tripName;
     private Long budget;
@@ -66,17 +64,35 @@ public class Trip extends BaseTimeEntity {
         this.endDate = LocalDate.parse(request.endDate());
         this.numberOfPeople = request.numberOfPeople();
         this.tripName = request.tripName();
-        this.tripStatus = request.tripStatus();
         this.area = request.area();
         this.subarea = request.subarea();
         this.budget = request.budget();
+        LocalDate currentDate = LocalDate.now();
 
-        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), this.getTripStatus(),
+        TripStatus tripStatus = null;
+        if (currentDate.isBefore(this.startDate)) {
+            tripStatus = BEFORE;
+        } else if (currentDate.isAfter(this.endDate)) {
+            tripStatus = AFTER;
+        } else {
+            tripStatus = ING;
+        }
+
+        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus,
             this.getArea(), this.getSubarea(), this.getBudget());
     }
 
     public TripInfoMsg toTripInfo() {
-        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), this.getTripStatus(),
+        LocalDate currentDate = LocalDate.now();
+        TripStatus tripStatus = null;
+        if (currentDate.isBefore(this.startDate)) {
+            tripStatus = BEFORE;
+        } else if (currentDate.isAfter(this.endDate)) {
+            tripStatus = AFTER;
+        } else {
+            tripStatus = ING;
+        }
+        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus,
             this.getArea(), this.getSubarea(), this.getBudget());
     }
 
