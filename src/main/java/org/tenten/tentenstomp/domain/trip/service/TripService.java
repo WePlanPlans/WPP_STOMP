@@ -45,11 +45,12 @@ public class TripService {
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
         Optional<TripMemberInfoMsg> tripMemberInfoByMemberId = memberRepository.findTripMemberInfoByMemberId(memberConnectMsg.memberId());
         tripMemberInfoByMemberId.ifPresent(tripMemberInfoMsg -> connectedMemberMap.put(memberConnectMsg.memberId(), tripMemberInfoMsg));
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId))
+            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
         );
         tripConnectedMemberMap.put(tripId, connectedMemberMap);
         sendToKafkaAndSave(tripMemberMsg);
@@ -59,10 +60,11 @@ public class TripService {
     @Transactional
     public void disconnectMember(String tripId, MemberDisconnectMsg memberDisconnectMsg) {
         HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
         connectedMemberMap.remove(memberDisconnectMsg.memberId());
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId))
+            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
         );
         tripConnectedMemberMap.put(tripId, connectedMemberMap);
         sendToKafkaAndSave(tripMemberMsg);
@@ -185,8 +187,9 @@ public class TripService {
             return objectMapper.convertValue(cached, TripMemberMsg.class);
         }
         HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId))
+            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
         );
         redisCache.save(MEMBER, tripId, tripMemberMsg);
         return tripMemberMsg;
