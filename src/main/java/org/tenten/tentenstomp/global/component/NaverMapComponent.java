@@ -44,7 +44,6 @@ public class NaverMapComponent {
             .queryParam("start", fromLongitude + "," + fromLatitude)
             .queryParam("goal",toLongitude+","+toLatitude)
             .build();
-//        log.info(uri.toUriString());
         HttpHeaders header = new HttpHeaders();
         header.set(NAVER_MAP_CLIENT_ID_HEADER, clientId);
         header.set(NAVER_MAP_API_KEY_HEADER, apiKey);
@@ -53,18 +52,10 @@ public class NaverMapComponent {
         try {
             Map<String, Object> map = objectMapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
             });
-//            for (String key : map.keySet()) {
-//                log.info("key : " + key);
-//            }
-//            log.info("code : " + map.get("code"));
-//            log.info("msg : " + map.get("message"));
             if (map.get("code").equals(0)) {
                 Map<String, Object> routeMap = (Map<String, Object>) map.get("route");
                 List<Map<String, Object>> traoptimalList = (List<Map<String, Object>> ) routeMap.get("traoptimal");
                 Map<String, Object> traoptimal = traoptimalList.get(0);
-//                for (String traKey : traoptimal.keySet()) {
-//                    log.info("traoptimal key : "+traKey);
-//                }
                 Map<String, Object> summary = (Map<String, Object>) traoptimal.get("summary");
                 Integer tollFare = (Integer) summary.get("tollFare");
                 Integer fuelPrice = (Integer) summary.get("fuelPrice");
@@ -76,10 +67,10 @@ public class NaverMapComponent {
             }
         } catch (JsonProcessingException e) {
             log.info("자동차 경로 응답 파일을 읽어오는 과정에서 오류가 발생했습니다.");
-            return null;
+            return new PathInfo(-1, -1.0, -1L);
         } catch (Exception e) {
             log.info(e.getMessage());
-            return null;
+            return new PathInfo(-1, -1.0, -1L);
         }
     }
 }

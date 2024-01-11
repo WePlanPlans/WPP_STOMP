@@ -1,6 +1,7 @@
 package org.tenten.tentenstomp.global.messaging.kafka.consumer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class KafkaConsumer {
 
@@ -28,27 +30,37 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = TRIP_INFO, groupId = GROUP_ID_CONFIG)
     public void updateTripInfo(TripInfoMsg tripInfoMsg) {
-        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripInfoMsg.tripId(), TRIP_INFO), GlobalStompResponse.ok(tripInfoMsg));
+        String destination = topicUtil.topicToReturnEndPoint(tripInfoMsg.tripId(), TRIP_INFO);
+        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripInfoMsg));
     }
 
     @KafkaListener(topics = TRIP_ITEM, groupId = GROUP_ID_CONFIG)
     public void updateTripItem(TripItemMsg tripItemMsg) {
-        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripItemMsg.tripId(), TRIP_ITEM, LocalDate.parse(tripItemMsg.visitDate())), GlobalStompResponse.ok(tripItemMsg));
+        String destination = topicUtil.topicToReturnEndPoint(tripItemMsg.tripId(), TRIP_ITEM, LocalDate.parse(tripItemMsg.visitDate()));
+        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripItemMsg));
     }
 
     @KafkaListener(topics = PATH, groupId = GROUP_ID_CONFIG)
     public void updateTripPath(TripPathMsg tripPathMsg) {
-        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripPathMsg.tripId(), PATH, LocalDate.parse(tripPathMsg.visitDate())), GlobalStompResponse.ok(tripPathMsg));
+        String destination = topicUtil.topicToReturnEndPoint(tripPathMsg.tripId(), PATH, LocalDate.parse(tripPathMsg.visitDate()));
+        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripPathMsg));
     }
 
     @KafkaListener(topics = MEMBER, groupId = GROUP_ID_CONFIG)
     public void updateConnectedTripMember(TripMemberMsg tripMemberMsg) {
-        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripMemberMsg.tripId(), MEMBER), GlobalStompResponse.ok(tripMemberMsg));
+        String destination = topicUtil.topicToReturnEndPoint(tripMemberMsg.tripId(), MEMBER);
+        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripMemberMsg));
     }
 
     @KafkaListener(topics = BUDGET, groupId = GROUP_ID_CONFIG)
     public void updateBudget(TripBudgetMsg tripBudgetMsg) {
-        messagingTemplate.convertAndSend(topicUtil.topicToReturnEndPoint(tripBudgetMsg.tripId(), BUDGET), GlobalStompResponse.ok(tripBudgetMsg));
+        String destination = topicUtil.topicToReturnEndPoint(tripBudgetMsg.tripId(), BUDGET);
+        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripBudgetMsg));
 
     }
 }
