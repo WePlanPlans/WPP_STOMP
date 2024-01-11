@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg.PathInfo;
 import org.tenten.tentenstomp.global.common.annotation.GetExecutionTime;
 import org.tenten.tentenstomp.global.component.dto.request.PathCalculateRequest;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
@@ -13,36 +12,29 @@ import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationR
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class PathComponent {
-    private final OdsayComponent odsayComponent;
-    private final NaverMapComponent naverMapComponent;
-//    @Async
-    public TripPathInfoMsg calculatePath(TripPlace fromPlace, TripPlace toPlace) {
-        long startTime = System.currentTimeMillis();
-        PathInfo pathInfo;
-        if (toPlace.transportation().equals(CAR)) {
-            pathInfo = naverMapComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
-        } else {
-            pathInfo = odsayComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
-        }
-        log.info("from "+fromPlace.seqNum()+" to "+toPlace.seqNum()+" executionTime : "+((System.currentTimeMillis() - startTime) / 1000.0));
-        return new TripPathInfoMsg(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo);
-    }
+    private final AsyncPathComponent asyncPathComponent;
+
+
     @GetExecutionTime
     public TripPathCalculationResult getTripPath(List<TripPlace> tripPlaceList) {
         List<PathCalculateRequest> pathCalculateRequests = toPathCalculateRequest(tripPlaceList);
-        int priceSum = 0;
+        Integer priceSum = 0;
         List<TripPathInfoMsg> pathInfoMsgs = new ArrayList<>();
         for (PathCalculateRequest calculateRequest : pathCalculateRequests) {
-            TripPathInfoMsg tripPathInfoMsg = calculatePath(calculateRequest.from(), calculateRequest.to());
-            pathInfoMsgs.add(tripPathInfoMsg);
-            if (tripPathInfoMsg.pathInfo() != null) {
-                priceSum += tripPathInfoMsg.pathInfo().price();
+            asyncPathComponent.calculatePath(calculateRequest.from(), calculateRequest.to(), pathInfoMsgs);
+        }
+        while (true) {
+            if (pathInfoMsgs.size() == pathCalculateRequests.size()) {
+                break;
+            }
+        }
+        for (TripPathInfoMsg tpm : pathInfoMsgs) {
+            if (tpm.pathInfo() != null) {
+                priceSum += tpm.pathInfo().price();
             }
         }
         return new TripPathCalculationResult(priceSum, pathInfoMsgs);
