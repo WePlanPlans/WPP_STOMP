@@ -43,7 +43,6 @@ public class OdsayComponent {
             .queryParam("EX", toLongitude)
             .queryParam("EY", toLatitude)
             .build();
-//        log.info(uri.toUriString());
         HttpHeaders header = new HttpHeaders();
         HttpEntity request = new HttpEntity(header);
         ResponseEntity<String> response = restTemplate.exchange(uri.toUri(), GET, request, String.class);
@@ -64,10 +63,10 @@ public class OdsayComponent {
             }
         } catch (JsonProcessingException jsonProcessingException) {
             log.info("대중교통 경로 응답 파일을 읽어오는 과정에서 오류가 발생했습니다.");
-            return null;
+            return new PathInfo(-1, -1.0, -1L);
         } catch (Exception e) {
             log.info(e.getMessage());
-            return null;
+            return new PathInfo(-1, -1.0, -1L);
         }
     }
 }
