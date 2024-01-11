@@ -17,7 +17,7 @@ import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 public class AsyncPathComponent {
     private final OdsayComponent odsayComponent;
     private final NaverMapComponent naverMapComponent;
-    @Async
+    @Async("pathTaskExecutor")
     public void calculatePath(TripPlace fromPlace, TripPlace toPlace, List<TripPathInfoMsg> pathInfoMsgs) {
 
         long startTime = System.currentTimeMillis();
