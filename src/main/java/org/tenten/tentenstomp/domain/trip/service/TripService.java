@@ -54,7 +54,20 @@ public class TripService {
         );
         tripConnectedMemberMap.put(tripId, connectedMemberMap);
         sendToKafkaAndSave(tripMemberMsg);
+    }
 
+    @Transactional
+    public void getConnectedMember(String tripId) {
+        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.get(tripId);
+        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+
+        TripMemberMsg tripMemberMsg = new TripMemberMsg(
+                Long.parseLong(tripId),
+                connectedMemberMap.values().stream().toList(),
+                memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)),
+                trip.getNumberOfPeople()
+        );
+        sendToKafkaAndSave(tripMemberMsg);
     }
 
     @Transactional
