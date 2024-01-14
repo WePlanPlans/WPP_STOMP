@@ -29,6 +29,12 @@ public class TripController {
         tripService.connectMember(tripId, memberConnectMsg);
     }
 
+    @MessageMapping("/trips/{tripId}/getConnectedMember")
+    public void getConnectedMember(@DestinationVariable String tripId) {
+        log.info("/trips/"+tripId+"/connectMember");
+        tripService.getConnectedMember(tripId);
+    }
+
     @MessageMapping("/trips/{tripId}/disconnectMember")
     public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
         log.info("/trips/"+tripId+"/disconnectMember");
