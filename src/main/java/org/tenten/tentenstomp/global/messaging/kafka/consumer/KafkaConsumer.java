@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import org.tenten.tentenstomp.domain.trip.dto.request.TripUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.*;
 import org.tenten.tentenstomp.global.response.GlobalStompResponse;
 import org.tenten.tentenstomp.global.util.TopicUtil;
@@ -22,11 +21,6 @@ public class KafkaConsumer {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final TopicUtil topicUtil;
-
-    @KafkaListener(topics = "kafka", groupId = GROUP_ID_CONFIG)
-    public void consumeTest(TripUpdateMsg data) {
-        messagingTemplate.convertAndSend("/sub/kafka", data);
-    }
 
     @KafkaListener(topics = TRIP_INFO, groupId = GROUP_ID_CONFIG)
     public void updateTripInfo(TripInfoMsg tripInfoMsg) {
