@@ -38,6 +38,13 @@ public class PathComponent {
                 priceSum += tpm.pathInfo().price();
             }
         }
+        pathInfoMsgs.sort((a, b) -> {
+            if (!a.fromSeqNum().equals(b.fromSeqNum())) {
+
+                return Integer.parseInt(Long.toString(a.fromSeqNum() - b.fromSeqNum()));
+            }
+            return Integer.parseInt(Long.toString(a.fromTripItemId() - b.fromTripItemId()));
+        });
         return new TripPathCalculationResult(priceSum, pathInfoMsgs);
 
     }
