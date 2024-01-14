@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemInfo;
-import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 
@@ -20,7 +19,7 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long> {
     @Query("SELECT ti FROM TripItem ti JOIN FETCH ti.tourItem WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripItem> findTripItemByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Query("SELECT NEW org.tenten.tentenstomp.global.component.dto.request.TripPlace(" +
-        "ti.seqNum, ti.transportation, t.longitude, t.latitude, ti.price" +
+        "ti.id, ti.seqNum, ti.transportation, t.longitude, t.latitude, ti.price" +
         ") FROM TripItem ti LEFT OUTER JOIN TourItem t ON ti.tourItem.id = t.id WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripPlace> findTripPlaceByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
 }
