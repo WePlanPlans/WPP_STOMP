@@ -53,7 +53,7 @@ public class TripService {
             Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
         );
         tripConnectedMemberMap.put(tripId, connectedMemberMap);
-        sendToKafkaAndSave(tripMemberMsg);
+        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
     }
 
     @Transactional
@@ -62,12 +62,12 @@ public class TripService {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-                Long.parseLong(tripId),
-                connectedMemberMap.values().stream().toList(),
-                memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)),
-                trip.getNumberOfPeople()
+            Long.parseLong(tripId),
+            connectedMemberMap.values().stream().toList(),
+            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)),
+            trip.getNumberOfPeople()
         );
-        sendToKafkaAndSave(tripMemberMsg);
+        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class TripService {
             Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
         );
         tripConnectedMemberMap.put(tripId, connectedMemberMap);
-        sendToKafkaAndSave(tripMemberMsg);
+        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
 
     }
 
@@ -106,7 +106,7 @@ public class TripService {
         );
         tripRepository.save(trip);
 
-        sendToKafkaAndSave(tripInfoMsg, tripBudgetMsg);
+        kafkaProducer.sendAndSaveToRedis(tripInfoMsg, tripBudgetMsg);
 
     }
 
@@ -138,7 +138,7 @@ public class TripService {
         TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripPath.tripPathInfoMsgs());
 
-        sendToKafkaAndSave(tripBudgetMsg, tripItemMsg, tripPathMsg);
+        kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
 
     @Transactional
@@ -162,36 +162,6 @@ public class TripService {
 
         kafkaProducer.send(TRIP_ITEM, getTripItemMsg(trip, pathAndItemRequestMsg.visitDate()));
         kafkaProducer.send(PATH, getTripPathMsg(trip, pathAndItemRequestMsg.visitDate()));
-    }
-
-    private void sendToKafkaAndSave(Object... dataArgs) {
-        for (Object data : dataArgs) {
-            if (data.getClass().equals(TripPathMsg.class)) {
-                kafkaProducer.send(PATH, data);
-                TripPathMsg tripPathMsg = (TripPathMsg) data;
-                redisCache.save(PATH, Long.toString(tripPathMsg.tripId()), tripPathMsg.visitDate(), tripPathMsg);
-            }
-            if (data.getClass().equals(TripItemMsg.class)) {
-                kafkaProducer.send(TRIP_ITEM, data);
-                TripItemMsg tripItemMsg = (TripItemMsg) data;
-                redisCache.save(TRIP_ITEM, Long.toString(tripItemMsg.tripId()), tripItemMsg.visitDate(), tripItemMsg);
-            }
-            if (data.getClass().equals(TripInfoMsg.class)) {
-                kafkaProducer.send(TRIP_INFO, data);
-                TripInfoMsg tripInfoMsg = (TripInfoMsg) data;
-                redisCache.save(TRIP_INFO, Long.toString(tripInfoMsg.tripId()), tripInfoMsg);
-            }
-            if (data.getClass().equals(TripMemberMsg.class)) {
-                kafkaProducer.send(MEMBER, data);
-                TripMemberMsg tripMemberMsg = (TripMemberMsg) data;
-                redisCache.save(MEMBER, Long.toString(tripMemberMsg.tripId()), tripMemberMsg);
-            }
-            if (data.getClass().equals(TripBudgetMsg.class)) {
-                kafkaProducer.send(BUDGET, data);
-                TripBudgetMsg tripBudgetMsg = (TripBudgetMsg) data;
-                redisCache.save(BUDGET, Long.toString(tripBudgetMsg.tripId()), tripBudgetMsg);
-            }
-        }
     }
 
     private TripMemberMsg getTripMemberMsg(String tripId) {

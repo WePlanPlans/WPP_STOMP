@@ -17,57 +17,49 @@ public class TripController {
 
     private final TripService tripService;
     private final KafkaProducer kafkaProducer;
+    /*
+    TODO : 백엔드에서 예외가 발생하면, 프론트로 예외 발생하기 전 시점 데이터를 보내줘야하는데, 이걸 어떻게 할 수 있을까
+    TODO : 실시간 편집인데, 노션 처럼 누가 어떤 것을 변경했는지 알려줄 필요가 있지 않을까?
+     */
 
-    @MessageMapping("/kafka")
-    public void testKafka(@Payload TripUpdateMsg tripUpdateMsg) {
-        kafkaProducer.send("kafka", tripUpdateMsg);
-    }
 
     @MessageMapping("/trips/{tripId}/connectMember")
     public void connectMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
-        log.info("/trips/"+tripId+"/connectMember");
         tripService.connectMember(tripId, memberConnectMsg);
     }
 
     @MessageMapping("/trips/{tripId}/getConnectedMember")
     public void getConnectedMember(@DestinationVariable String tripId) {
-        log.info("/trips/"+tripId+"/connectMember");
         tripService.getConnectedMember(tripId);
     }
 
     @MessageMapping("/trips/{tripId}/disconnectMember")
     public void disconnectMember(@DestinationVariable String tripId, @Payload MemberDisconnectMsg memberDisconnectMsg) {
-        log.info("/trips/"+tripId+"/disconnectMember");
         tripService.disconnectMember(tripId, memberDisconnectMsg);
     }
 
     @MessageMapping("/trips/{tripId}/enterMember")
     public void enterMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
-        log.info("/trips/"+tripId+"/enterMember");
         tripService.enterMember(tripId, memberConnectMsg);
     }
 
     @MessageMapping("/trips/{tripId}/info")
     public void editPlan(@DestinationVariable String tripId, @Payload TripUpdateMsg tripUpdateMsg) {
-        log.info("/trips/"+tripId+"/info");
         tripService.updateTrip(tripId, tripUpdateMsg);
     }
 
     @MessageMapping("/trips/{tripId}/addTripItems")
     public void addTripItem(@DestinationVariable String tripId, @Payload TripItemAddMsg tripItemAddMsg) {
-        log.info("/trips/"+tripId+"/addTripItems");
         tripService.addTripItem(tripId, tripItemAddMsg);
     }
 
     @MessageMapping("/trips/{tripId}/updateTripItemOrder")
     public void updateTripItemOrder(@DestinationVariable String tripId, @Payload TripItemOrderUpdateMsg orderUpdateMsg) {
-        log.info("/trips/"+tripId+"/updateTripItemOrder");
         tripService.updateTripItemOrder(tripId, orderUpdateMsg);
     }
 
     @MessageMapping("/trips/{tripId}/getPathAndItems")
     public void getPathAndItems(@DestinationVariable String tripId, @Payload PathAndItemRequestMsg pathAndItemRequestMsg) {
-        log.info("/trips/"+tripId+"/getPathAndItems");
         tripService.getPathAndItems(tripId, pathAndItemRequestMsg);
     }
 }
