@@ -28,6 +28,6 @@ public class AsyncPathComponent {
             pathInfo = odsayComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
         }
         log.info("from " + fromPlace.seqNum() + " to " + toPlace.seqNum() + " executionTime : " + ((System.currentTimeMillis() - startTime) / 1000.0));
-        pathInfoMsgs.add(new TripPathInfoMsg(fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo));
+        pathInfoMsgs.add(new TripPathInfoMsg(fromPlace.tripItemId(), toPlace.tripItemId(), fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), toPlace.transportation(), pathInfo));
     }
 }

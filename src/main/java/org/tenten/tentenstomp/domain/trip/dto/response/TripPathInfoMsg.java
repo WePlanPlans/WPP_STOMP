@@ -3,6 +3,8 @@ package org.tenten.tentenstomp.domain.trip.dto.response;
 import org.tenten.tentenstomp.global.common.enums.Transportation;
 
 public record TripPathInfoMsg(
+    Long fromTripItemId,
+    Long toTripItemId,
     Long fromSeqNum,
     Long toSeqNum,
     String fromLongitude,
