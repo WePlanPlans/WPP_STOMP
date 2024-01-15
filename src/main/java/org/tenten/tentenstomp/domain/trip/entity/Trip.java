@@ -105,4 +105,8 @@ public class Trip extends BaseTimeEntity {
         this.tripItemPriceSum -= oldTripItemPrice;
         this.tripItemPriceSum += newTripItemPrice;
     }
+
+    public void updateBudget(Long budget) {
+        this.budget = budget;
+    }
 }
