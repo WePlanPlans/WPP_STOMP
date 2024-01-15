@@ -19,7 +19,7 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long> {
         "ti.id, t.id, t.title, t.originalThumbnailUrl, t.contentTypeId, ti.transportation, ti.seqNum, ti.visitDate, ti.price" +
         ") FROM TripItem ti LEFT OUTER JOIN TourItem t ON ti.tourItem.id = t.id WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripItemInfo> getTripItemInfoByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
-
+    @Lock(PESSIMISTIC_WRITE)
     @Query("SELECT ti FROM TripItem ti JOIN FETCH ti.tourItem WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripItem> findTripItemByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Query("SELECT NEW org.tenten.tentenstomp.global.component.dto.request.TripPlace(" +
@@ -27,9 +27,9 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long> {
         ") FROM TripItem ti LEFT OUTER JOIN TourItem t ON ti.tourItem.id = t.id WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripPlace> findTripPlaceByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Lock(PESSIMISTIC_WRITE)
-    @Query("SELECT ti FROM TripItem ti WHERE ti.id = :tripId")
+    @Query("SELECT ti FROM TripItem ti JOIN FETCH ti.trip WHERE ti.id = :tripId")
     Optional<TripItem> findTripItemForUpdate(@Param("tripId") Long tripId);
     @Lock(PESSIMISTIC_WRITE)
-    @Query("SELECT ti FROM TripItem ti WHERE ti.id = :tripId")
+    @Query("SELECT ti FROM TripItem ti JOIN FETCH ti.trip WHERE ti.id = :tripId")
     Optional<TripItem> findTripItemForDelete(@Param("tripId") Long tripId);
 }
