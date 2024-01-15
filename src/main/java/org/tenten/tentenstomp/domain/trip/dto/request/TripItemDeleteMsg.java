@@ -1,8 +1,7 @@
 package org.tenten.tentenstomp.domain.trip.dto.request;
 
-public record TripItemPriceUpdateMsg(
+public record TripItemDeleteMsg(
     Long tripId,
-    String visitDate,
-    Long price
+    String visitDate
 ) {
 }
