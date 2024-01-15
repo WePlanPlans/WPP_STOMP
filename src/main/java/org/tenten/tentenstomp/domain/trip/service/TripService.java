@@ -16,6 +16,7 @@ import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
 import org.tenten.tentenstomp.global.cache.RedisCache;
 import org.tenten.tentenstomp.global.common.enums.Category;
+import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
@@ -27,6 +28,7 @@ import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
+import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -98,7 +100,7 @@ public class TripService {
 
     @Transactional
     public void updateTrip(String tripId, TripUpdateMsg tripUpdateMsg) {
-        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
 
         TripInfoMsg tripInfoMsg = trip.changeTripInfo(tripUpdateMsg);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
@@ -112,7 +114,7 @@ public class TripService {
 
     @Transactional
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
-        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()));
         LocalDate visitDate = LocalDate.parse(tripItemAddMsg.visitDate());
         List<TripItem> newTripItems = new ArrayList<>();
@@ -143,7 +145,7 @@ public class TripService {
 
     @Transactional
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
-        Trip trip = tripRepository.findTripByTripId(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<Long, Long> itemOrderMap = new HashMap<>();
         for (OrderInfo orderInfo : orderUpdateMsg.tripItemOrder()) {
             itemOrderMap.put(orderInfo.tripItemId(), orderInfo.seqNum());
@@ -162,6 +164,25 @@ public class TripService {
 
         kafkaProducer.send(TRIP_ITEM, getTripItemMsg(trip, pathAndItemRequestMsg.visitDate()));
         kafkaProducer.send(PATH, getTripPathMsg(trip, pathAndItemRequestMsg.visitDate()));
+    }
+
+    @Transactional
+    public void updateTripBudget(String tripId, TripBudgetUpdateMsg tripBudgetUpdateMsg) {
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+
+        trip.updateBudget(tripBudgetUpdateMsg.budget());
+        LocalDate now = LocalDate.now();
+        TripStatus tripStatus;
+        if (now.isBefore(trip.getStartDate())) {
+            tripStatus = BEFORE;
+        } else if (now.isAfter(trip.getEndDate())) {
+            tripStatus = AFTER;
+        } else {
+            tripStatus = ING;
+        }
+        TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getArea(), trip.getSubarea(), trip.getBudget());
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
+        kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
 
     private TripMemberMsg getTripMemberMsg(String tripId) {

@@ -35,7 +35,7 @@ public class TripItemService {
     private final PathComponent pathComponent;
     @Transactional
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
-        TripItem tripItem = tripItemRepository.findById(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
+        TripItem tripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
         Long oldPrice = tripItem.getPrice();
         Long newPrice = priceUpdateMsg.price();
         Trip trip = tripItem.getTrip();
@@ -48,7 +48,7 @@ public class TripItemService {
     }
     @Transactional
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
-        TripItem tripItem = tripItemRepository.findById(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
+        TripItem tripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
         Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
         LocalDate pastDate = tripItem.getVisitDate();
         LocalDate newDate = LocalDate.parse(visitDateUpdateMsg.visitDate());
@@ -94,7 +94,7 @@ public class TripItemService {
     }
     @Transactional
     public void deleteTripItem(String tripItemId) {
-        TripItem tripItem = tripItemRepository.findById(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
+        TripItem tripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
         Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
 
         LocalDate visitDate = tripItem.getVisitDate();
@@ -128,7 +128,7 @@ public class TripItemService {
     }
     @Transactional
     public void updateTripItemTransportation(String tripItemId, TripItemTransportationUpdateMsg tripItemTransportationUpdateMsg) {
-        TripItem tripItem = tripItemRepository.findById(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
+        TripItem tripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 tripItem이 없다 " + tripItemId, NOT_FOUND));
         Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
 
         LocalDate visitDate = tripItem.getVisitDate();
