@@ -62,4 +62,9 @@ public class TripController {
     public void getPathAndItems(@DestinationVariable String tripId, @Payload PathAndItemRequestMsg pathAndItemRequestMsg) {
         tripService.getPathAndItems(tripId, pathAndItemRequestMsg);
     }
+
+    @MessageMapping("/trips/{tripId}/updateBudget")
+    public void updateTripBudget(@DestinationVariable String tripId, @Payload TripBudgetUpdateMsg tripBudgetUpdateMsg) {
+        tripService.updateTripBudget(tripId, tripBudgetUpdateMsg);
+    }
 }
