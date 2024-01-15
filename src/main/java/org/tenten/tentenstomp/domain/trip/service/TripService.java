@@ -98,7 +98,7 @@ public class TripService {
 
     @Transactional
     public void updateTrip(String tripId, TripUpdateMsg tripUpdateMsg) {
-        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
 
         TripInfoMsg tripInfoMsg = trip.changeTripInfo(tripUpdateMsg);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
@@ -112,7 +112,7 @@ public class TripService {
 
     @Transactional
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
-        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()));
         LocalDate visitDate = LocalDate.parse(tripItemAddMsg.visitDate());
         List<TripItem> newTripItems = new ArrayList<>();
@@ -143,7 +143,7 @@ public class TripService {
 
     @Transactional
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
-        Trip trip = tripRepository.findTripByTripId(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<Long, Long> itemOrderMap = new HashMap<>();
         for (OrderInfo orderInfo : orderUpdateMsg.tripItemOrder()) {
             itemOrderMap.put(orderInfo.tripItemId(), orderInfo.seqNum());
