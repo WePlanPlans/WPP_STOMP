@@ -14,6 +14,7 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
+import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
@@ -26,6 +27,7 @@ import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
+import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
 
 @Service
@@ -127,7 +129,9 @@ public class TripService {
     }
 
     private void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems));
+        Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
+        Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
+        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), transportation);
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
@@ -147,7 +151,7 @@ public class TripService {
         for (OrderInfo orderInfo : orderUpdateMsg.tripItemOrder()) {
             itemOrderMap.put(orderInfo.tripItemId(), orderInfo.seqNum());
         }
-        List<TripItem> tripItems = trip.getTripItems();
+        List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getId(), LocalDate.parse(orderUpdateMsg.visitDate()));
         for (TripItem tripItem : tripItems) {
             tripItem.updateSeqNum(itemOrderMap.get(tripItem.getId()));
         }
@@ -184,6 +188,25 @@ public class TripService {
 
     @Transactional
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
+        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+        Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
+        String visitDate = tripTransportationUpdateMsg.visitDate();
+        Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
+        List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate));
 
+        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), transportation);
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
+
+        tripTransportationMap.put(visitDate, tripTransportationUpdateMsg.transportation());
+        tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
+
+        tripRepository.save(trip);
+
+        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
+        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripItems);
+        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripPath.tripPathInfoMsgs());
+
+        kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
 }

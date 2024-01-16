@@ -11,4 +11,13 @@ public enum Transportation {
     Transportation(String name) {
         this.name = name;
     }
+
+    public static Transportation fromName(String name) {
+        for (Transportation t : Transportation.values()) {
+            if (t.getName().equals(name)) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

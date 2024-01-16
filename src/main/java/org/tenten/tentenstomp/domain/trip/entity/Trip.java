@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
 import org.tenten.tentenstomp.global.common.BaseTimeEntity;
+import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.converter.MapConverter;
 
@@ -52,7 +53,7 @@ public class Trip extends BaseTimeEntity {
     private Map<String, Integer> tripPathPriceMap;
     @Convert(converter = MapConverter.class)
     @Column(columnDefinition = "JSON")
-    private Map<String, String> tripTransportationMap;
+    private Map<String, Transportation> tripTransportationMap;
 
     @OneToMany(mappedBy = "trip", fetch = LAZY, cascade = REMOVE)
     private final List<TripMember> tripMembers = new ArrayList<>();
@@ -73,7 +74,7 @@ public class Trip extends BaseTimeEntity {
         this.budget = request.budget();
         LocalDate currentDate = LocalDate.now();
 
-        TripStatus tripStatus = null;
+        TripStatus tripStatus;
         if (currentDate.isBefore(this.startDate)) {
             tripStatus = BEFORE;
         } else if (currentDate.isAfter(this.endDate)) {
