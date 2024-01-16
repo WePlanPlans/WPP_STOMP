@@ -138,8 +138,8 @@ public class TripService {
         tripRepository.save(trip);
 
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripItems);
-        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripPath.tripPathInfoMsgs());
+        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, transportation, tripItems);
+        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, transportation, tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
@@ -203,8 +203,8 @@ public class TripService {
         tripRepository.save(trip);
 
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripItems);
-        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripPath.tripPathInfoMsgs());
+        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripItems);
+        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
