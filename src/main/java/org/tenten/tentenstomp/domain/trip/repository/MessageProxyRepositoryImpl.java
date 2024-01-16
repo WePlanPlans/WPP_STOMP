@@ -14,7 +14,7 @@ import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -31,15 +31,19 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository{
     private final TripItemRepository tripItemRepository;
     private final PathComponent pathComponent;
     @Transactional(readOnly = true)
-    public TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashMap<Long, TripMemberInfoMsg>> tripConnectedMemberMap) {
+    public TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashSet<Long>> tripConnectedMemberMap) {
         Object cached = redisCache.get(MEMBER, Long.toString(tripId));
         if (cached != null) {
             return objectMapper.convertValue(cached, TripMemberMsg.class);
         }
-        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(Long.toString(tripId), new HashMap<>());
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(Long.toString(tripId), new HashSet<>());
         Trip trip = tripRepository.getReferenceById(tripId);
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            tripId, connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(tripId), trip.getNumberOfPeople()
+            tripId,
+            memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
+                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+            ).toList(),
+            trip.getNumberOfPeople()
         );
         redisCache.save(MEMBER, Long.toString(tripId), tripMemberMsg);
         return tripMemberMsg;
