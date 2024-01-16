@@ -191,10 +191,9 @@ public class TripService {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
         String visitDate = tripTransportationUpdateMsg.visitDate();
-        Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate));
 
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), transportation);
+        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), tripTransportationUpdateMsg.transportation());
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
 
