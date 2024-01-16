@@ -9,7 +9,6 @@ import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemAddMsg.TripItemCreateRequest;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemOrderUpdateMsg.OrderInfo;
 import org.tenten.tentenstomp.domain.trip.dto.response.*;
-import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberInfoMsg.TripMemberInfo;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
