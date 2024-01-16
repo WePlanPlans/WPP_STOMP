@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.RestController;
+import org.tenten.tentenstomp.domain.trip.dto.request.TripItemDeleteMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemPriceUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemTransportationUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemVisitDateUpdateMsg;
@@ -33,7 +34,7 @@ public class TripItemController {
     }
 
     @MessageMapping("/tripItems/{tripItemId}/deleteItem")
-    public void deleteTripItem(@DestinationVariable String tripItemId) {
-        tripItemService.deleteTripItem(tripItemId);
+    public void deleteTripItem(@DestinationVariable String tripItemId, @Payload TripItemDeleteMsg tripItemDeleteMsg) {
+        tripItemService.deleteTripItem(tripItemId, tripItemDeleteMsg);
     }
 }

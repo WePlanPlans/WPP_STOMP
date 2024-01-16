@@ -18,6 +18,26 @@ public class KafkaProducer {
         kafkaTemplate.send(to, data);
     }
 
+    public void sendWithOutCaching(Object... dataArgs) {
+        for (Object data : dataArgs) {
+            if (data.getClass().equals(TripPathMsg.class)) {
+                send(PATH, data);
+            }
+            if (data.getClass().equals(TripItemMsg.class)) {
+                send(TRIP_ITEM, data);
+            }
+            if (data.getClass().equals(TripInfoMsg.class)) {
+                send(TRIP_INFO, data);
+            }
+            if (data.getClass().equals(TripMemberMsg.class)) {
+                send(MEMBER, data);
+            }
+            if (data.getClass().equals(TripBudgetMsg.class)) {
+                send(BUDGET, data);
+            }
+        }
+    }
+
     public void sendAndSaveToRedis(Object... dataArgs) {
         for (Object data : dataArgs) {
             if (data.getClass().equals(TripPathMsg.class)) {

@@ -1,6 +1,5 @@
 package org.tenten.tentenstomp.domain.trip.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +11,9 @@ import org.tenten.tentenstomp.domain.trip.dto.request.TripItemOrderUpdateMsg.Ord
 import org.tenten.tentenstomp.domain.trip.dto.response.*;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.entity.TripItem;
+import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
-import org.tenten.tentenstomp.global.cache.RedisCache;
-import org.tenten.tentenstomp.global.common.enums.Category;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
@@ -39,9 +37,8 @@ public class TripService {
     private final MemberRepository memberRepository;
     private final TourItemRepository tourItemRepository;
     private final KafkaProducer kafkaProducer;
-    private final RedisCache redisCache;
     private final PathComponent pathComponent;
-    private final ObjectMapper objectMapper;
+    private final MessageProxyRepository messageProxyRepository;
     private final Map<String, HashMap<Long, TripMemberInfoMsg>> tripConnectedMemberMap = new HashMap<>();
 
     @Transactional
@@ -86,15 +83,15 @@ public class TripService {
 
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public void enterMember(String tripId, MemberConnectMsg memberConnectMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
-        kafkaProducer.send(MEMBER, getTripMemberMsg(tripId));
+        kafkaProducer.send(MEMBER, messageProxyRepository.getTripMemberMsg(trip.getId(), tripConnectedMemberMap));
         kafkaProducer.send(TRIP_INFO, trip.toTripInfo());
-        kafkaProducer.send(TRIP_ITEM, getTripItemMsg(trip, trip.getStartDate().toString()));
-        kafkaProducer.send(PATH, getTripPathMsg(trip, trip.getStartDate().toString()));
-        kafkaProducer.send(BUDGET, getTripBudgetMsg(trip));
+        kafkaProducer.send(TRIP_ITEM, messageProxyRepository.getTripItemMsg(trip.getId(), trip.getStartDate().toString()));
+        kafkaProducer.send(PATH, messageProxyRepository.getTripPathMsg(trip.getId(), trip.getStartDate().toString()));
+        kafkaProducer.send(BUDGET, messageProxyRepository.getTripBudgetMsg(trip));
     }
 
 
@@ -162,8 +159,8 @@ public class TripService {
     public void getPathAndItems(String tripId, PathAndItemRequestMsg pathAndItemRequestMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
-        kafkaProducer.send(TRIP_ITEM, getTripItemMsg(trip, pathAndItemRequestMsg.visitDate()));
-        kafkaProducer.send(PATH, getTripPathMsg(trip, pathAndItemRequestMsg.visitDate()));
+        kafkaProducer.send(TRIP_ITEM, messageProxyRepository.getTripItemMsg(trip.getId(), pathAndItemRequestMsg.visitDate()));
+        kafkaProducer.send(PATH, messageProxyRepository.getTripPathMsg(trip.getId(), pathAndItemRequestMsg.visitDate()));
     }
 
     @Transactional
@@ -183,61 +180,6 @@ public class TripService {
         TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getArea(), trip.getSubarea(), trip.getBudget());
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
-    }
-
-    private TripMemberMsg getTripMemberMsg(String tripId) {
-        Object cached = redisCache.get(MEMBER, tripId);
-        if (cached != null) {
-            return objectMapper.convertValue(cached, TripMemberMsg.class);
-        }
-        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
-        Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
-        );
-        redisCache.save(MEMBER, tripId, tripMemberMsg);
-        return tripMemberMsg;
-    }
-
-    private TripBudgetMsg getTripBudgetMsg(Trip trip) {
-
-        Object cached = redisCache.get(BUDGET, Long.toString(trip.getId()));
-        if (cached != null) {
-            return objectMapper.convertValue(cached, TripBudgetMsg.class);
-        }
-        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
-            trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
-        );
-        redisCache.save(BUDGET, Long.toString(trip.getId()), tripBudgetMsg);
-        return tripBudgetMsg;
-    }
-
-    private TripItemMsg getTripItemMsg(Trip trip, String visitDate) {
-        Object cached = redisCache.get(TRIP_ITEM, Long.toString(trip.getId()), visitDate);
-        if (cached != null) {
-            return objectMapper.convertValue(cached, TripItemMsg.class);
-
-        }
-        List<TripItemInfo> tripInfos = tripItemRepository.getTripItemInfoByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate));
-        List<TripItemInfoMsg> tripItemInfoMsgs = tripInfos.stream().map(t -> new TripItemInfoMsg(
-            t.tripItemId(), t.tourItemId(), t.name(), t.thumbnailUrl(), Category.fromCode(t.contentTypeId()).getName(), t.transportation(), t.seqNum(), t.visitDate().toString(), t.price()
-        )).toList();
-        TripItemMsg tripItemMsg = new TripItemMsg(trip.getId(), visitDate, tripItemInfoMsgs);
-        redisCache.save(TRIP_ITEM, Long.toString(trip.getId()), visitDate, tripItemMsg);
-        return tripItemMsg;
-
-    }
-
-    private TripPathMsg getTripPathMsg(Trip trip, String visitDate) {
-        Object cached = redisCache.get(PATH, Long.toString(trip.getId()), visitDate);
-        if (cached != null) {
-            return objectMapper.convertValue(cached, TripPathMsg.class);
-        }
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(tripItemRepository.findTripPlaceByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate)));
-        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripPath.tripPathInfoMsgs());
-        redisCache.save(PATH, Long.toString(trip.getId()), visitDate, tripPathMsg);
-        return tripPathMsg;
-
     }
 
 
