@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemDeleteMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemPriceUpdateMsg;
-import org.tenten.tentenstomp.domain.trip.dto.request.TripItemTransportationUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemVisitDateUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripBudgetMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
@@ -15,6 +14,7 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
+import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 
 @Service
 @RequiredArgsConstructor
@@ -49,11 +51,12 @@ public class TripItemService {
             Long oldPrice = tripItem.getPrice();
             Long newPrice = priceUpdateMsg.price();
             Trip trip = tripItem.getTrip();
+            Transportation transportation = trip.getTripTransportationMap().getOrDefault(priceUpdateMsg.visitDate(), CAR);
             trip.updateTripItemPriceSum(oldPrice, newPrice);
             tripItem.updatePrice(newPrice);
-            List<TripItem> tripItems = trip.getTripItems();
+            List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), LocalDate.parse(priceUpdateMsg.visitDate()));
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-            TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), tripItem.getVisitDate().toString(), tripItems, tripItem.getId(), priceUpdateMsg);
+            TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), tripItem.getVisitDate().toString(), tripItems, tripItem.getId(), transportation, priceUpdateMsg);
             kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg);
         }
 
@@ -74,8 +77,11 @@ public class TripItemService {
         } else {
             TripItem tripItem = optionalTripItem.get();
             Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
+            Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
             LocalDate pastDate = tripItem.getVisitDate();
+            Transportation pastDateTransportation = tripTransportationMap.getOrDefault(pastDate.toString(), CAR);
             LocalDate newDate = LocalDate.parse(visitDateUpdateMsg.newVisitDate());
+            Transportation newDateTransportation = tripTransportationMap.getOrDefault(newDate.toString(), CAR);
 
             List<TripItem> pastDateTripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), pastDate);
             List<TripItem> newDateTripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), newDate);
@@ -97,8 +103,8 @@ public class TripItemService {
             tripItem.updateVisitDate(LocalDate.parse(visitDateUpdateMsg.newVisitDate()));
             newDateTripItems.add(tripItem);
 
-            TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newPastDateTripItems));
-            TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems));
+            TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newPastDateTripItems), pastDateTransportation);
+            TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems), newDateTransportation);
 
             Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(pastDate.toString(), 0), pastDateTripPath.pathPriceSum());
@@ -107,10 +113,10 @@ public class TripItemService {
             tripPathPriceMap.put(newDate.toString(), newDateTripPath.pathPriceSum());
             tripRepository.save(trip);
 
-            TripItemMsg pastDateTripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), pastDate.toString(), newPastDateTripItems);
-            TripItemMsg newDateTripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), newDate.toString(), newDateTripItems);
-            TripPathMsg pastDateTripPathMsg = new TripPathMsg(trip.getId(), pastDate.toString(), pastDateTripPath.tripPathInfoMsgs());
-            TripPathMsg newDateTripPathMsg = new TripPathMsg(trip.getId(), newDate.toString(), newDateTripPath.tripPathInfoMsgs());
+            TripItemMsg pastDateTripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), pastDate.toString(), pastDateTransportation, newPastDateTripItems);
+            TripItemMsg newDateTripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), newDate.toString(), newDateTransportation, newDateTripItems);
+            TripPathMsg pastDateTripPathMsg = new TripPathMsg(trip.getId(), pastDate.toString(), pastDateTransportation, pastDateTripPath.tripPathInfoMsgs());
+            TripPathMsg newDateTripPathMsg = new TripPathMsg(trip.getId(), newDate.toString(), newDateTransportation, newDateTripPath.tripPathInfoMsgs());
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
 
             kafkaProducer.sendAndSaveToRedis(pastDateTripItemMsg, newDateTripItemMsg, pastDateTripPathMsg, newDateTripPathMsg, tripBudgetMsg);
@@ -131,8 +137,10 @@ public class TripItemService {
         } else {
             TripItem tripItem = optionalTripItem.get();
             Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
+            Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
 
             LocalDate visitDate = tripItem.getVisitDate();
+            Transportation transportation = tripTransportationMap.getOrDefault(visitDate.toString(), CAR);
 
             List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), visitDate);
             Long seqNum = tripItem.getSeqNum();
@@ -148,14 +156,14 @@ public class TripItemService {
             }
 
             tripItemRepository.delete(tripItem);
-            TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems));
+            TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems), transportation);
             Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
             tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
             tripRepository.save(trip);
 
-            TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate.toString(), newTripItems);
-            TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate.toString(), tripPath.tripPathInfoMsgs());
+            TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate.toString(),  transportation, newTripItems);
+            TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate.toString(), transportation, tripPath.tripPathInfoMsgs());
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
 
             kafkaProducer.sendAndSaveToRedis(tripItemMsg, tripPathMsg, tripBudgetMsg);
@@ -163,46 +171,5 @@ public class TripItemService {
 
 
     }
-
-    @Transactional
-    public void updateTripItemTransportation(String tripItemId, TripItemTransportationUpdateMsg tripItemTransportationUpdateMsg) {
-        Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
-        if (optionalTripItem.isEmpty()) {
-            Trip trip = tripRepository.getReferenceById(tripItemTransportationUpdateMsg.tripId());
-            kafkaProducer.sendWithOutCaching(
-                messageProxyRepository.getTripItemMsg(trip.getId(), tripItemTransportationUpdateMsg.visitDate()),
-                messageProxyRepository.getTripPathMsg(trip.getId(), tripItemTransportationUpdateMsg.visitDate()),
-                messageProxyRepository.getTripBudgetMsg(trip)
-            );
-        } else {
-            TripItem tripItem = optionalTripItem.get();
-            Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
-
-            LocalDate visitDate = tripItem.getVisitDate();
-            List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), visitDate);
-            for (TripItem newTripItem : tripItems) {
-                if (newTripItem.getId().equals(tripItem.getId())) {
-                    newTripItem.updateTransportation(tripItemTransportationUpdateMsg.transportation());
-                }
-            }
-
-            tripItem.updateTransportation(tripItemTransportationUpdateMsg.transportation());
-            tripItemRepository.save(tripItem);
-
-            TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems));
-            Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-            trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
-            tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
-            tripRepository.save(trip);
-
-            TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate.toString(), tripItems);
-            TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate.toString(), tripPath.tripPathInfoMsgs());
-            TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-
-            kafkaProducer.sendAndSaveToRedis(tripItemMsg, tripPathMsg, tripBudgetMsg);
-        }
-
-    }
-
 
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripPathInfoMsg;
 import org.tenten.tentenstomp.global.common.annotation.GetExecutionTime;
+import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.component.dto.request.PathCalculateRequest;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
@@ -21,12 +22,13 @@ public class PathComponent {
 
 
     @GetExecutionTime
-    public TripPathCalculationResult getTripPath(List<TripPlace> tripPlaceList) {
+    public TripPathCalculationResult getTripPath(List<TripPlace> tripPlaceList, Transportation transportation) {
+
         List<PathCalculateRequest> pathCalculateRequests = toPathCalculateRequest(tripPlaceList);
         Integer priceSum = 0;
         List<TripPathInfoMsg> pathInfoMsgs = new CopyOnWriteArrayList<>();
         for (PathCalculateRequest calculateRequest : pathCalculateRequests) {
-            asyncPathComponent.calculatePath(calculateRequest.from(), calculateRequest.to(), pathInfoMsgs);
+            asyncPathComponent.calculatePath(calculateRequest.from(), calculateRequest.to(), pathInfoMsgs, transportation);
         }
         while (true) {
             if (pathInfoMsgs.size() == pathCalculateRequests.size()) {
