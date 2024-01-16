@@ -16,14 +16,14 @@ import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 public interface TripItemRepository extends JpaRepository<TripItem, Long> {
     @Query("SELECT NEW org.tenten.tentenstomp.domain.trip.dto.response.TripItemInfo(" +
-        "ti.id, t.id, t.title, t.originalThumbnailUrl, t.contentTypeId, ti.transportation, ti.seqNum, ti.visitDate, ti.price" +
+        "ti.id, t.id, t.title, t.originalThumbnailUrl, t.contentTypeId,  ti.seqNum, ti.visitDate, ti.price" +
         ") FROM TripItem ti LEFT OUTER JOIN TourItem t ON ti.tourItem.id = t.id WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripItemInfo> getTripItemInfoByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Lock(PESSIMISTIC_WRITE)
     @Query("SELECT ti FROM TripItem ti JOIN FETCH ti.tourItem WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripItem> findTripItemByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Query("SELECT NEW org.tenten.tentenstomp.global.component.dto.request.TripPlace(" +
-        "ti.id, ti.seqNum, ti.transportation, t.longitude, t.latitude, ti.price" +
+        "ti.id, ti.seqNum,  t.longitude, t.latitude, ti.price" +
         ") FROM TripItem ti LEFT OUTER JOIN TourItem t ON ti.tourItem.id = t.id WHERE ti.trip.id = :tripId AND ti.visitDate = :visitDate ORDER BY ti.seqNum ASC")
     List<TripPlace> findTripPlaceByTripIdAndVisitDate(@Param("tripId") Long tripId, @Param("visitDate") LocalDate visitDate);
     @Lock(PESSIMISTIC_WRITE)

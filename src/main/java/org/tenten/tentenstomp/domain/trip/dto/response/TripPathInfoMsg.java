@@ -1,7 +1,5 @@
 package org.tenten.tentenstomp.domain.trip.dto.response;
 
-import org.tenten.tentenstomp.global.common.enums.Transportation;
-
 public record TripPathInfoMsg(
     Long fromTripItemId,
     Long toTripItemId,
@@ -11,7 +9,6 @@ public record TripPathInfoMsg(
     String fromLatitude,
     String toLongitude,
     String toLatitude,
-    Transportation transportation,
     PathInfo pathInfo
 
 ) {
