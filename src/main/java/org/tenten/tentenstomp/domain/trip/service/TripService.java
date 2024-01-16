@@ -9,6 +9,7 @@ import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemAddMsg.TripItemCreateRequest;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripItemOrderUpdateMsg.OrderInfo;
 import org.tenten.tentenstomp.domain.trip.dto.response.*;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberInfoMsg.TripMemberInfo;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
@@ -41,31 +42,36 @@ public class TripService {
     private final KafkaProducer kafkaProducer;
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
-    private final Map<String, HashMap<Long, TripMemberInfoMsg>> tripConnectedMemberMap = new HashMap<>();
+    private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
 
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
-        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        Optional<TripMemberInfoMsg> tripMemberInfoByMemberId = memberRepository.findTripMemberInfoByMemberId(memberConnectMsg.memberId());
-        tripMemberInfoByMemberId.ifPresent(tripMemberInfoMsg -> connectedMemberMap.put(memberConnectMsg.memberId(), tripMemberInfoMsg));
+        Optional<TripMemberInfo> tripMemberInfoByMemberId = memberRepository.findTripMemberInfoByMemberId(memberConnectMsg.memberId());
+        tripMemberInfoByMemberId.ifPresent(tripMemberInfoMsg -> connectedMember.add(tripMemberInfoByMemberId.get().memberId()));
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
+            Long.parseLong(tripId),
+            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
+                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+            ).toList(),
+            trip.getNumberOfPeople()
         );
-        tripConnectedMemberMap.put(tripId, connectedMemberMap);
+        tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
     }
 
     @Transactional
     public void getConnectedMember(String tripId) {
-        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.get(tripId);
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
             Long.parseLong(tripId),
-            connectedMemberMap.values().stream().toList(),
-            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)),
+            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
+                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+            ).toList(),
             trip.getNumberOfPeople()
         );
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
@@ -73,14 +79,18 @@ public class TripService {
 
     @Transactional
     public void disconnectMember(String tripId, MemberDisconnectMsg memberDisconnectMsg) {
-        HashMap<Long, TripMemberInfoMsg> connectedMemberMap = tripConnectedMemberMap.getOrDefault(tripId, new HashMap<>());
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        connectedMemberMap.remove(memberDisconnectMsg.memberId());
+        connectedMember.remove(memberDisconnectMsg.memberId());
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId), connectedMemberMap.values().stream().toList(), memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)), trip.getNumberOfPeople()
+            Long.parseLong(tripId),
+            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
+                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+            ).toList(),
+            trip.getNumberOfPeople()
         );
-        tripConnectedMemberMap.put(tripId, connectedMemberMap);
+        tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
 
     }
