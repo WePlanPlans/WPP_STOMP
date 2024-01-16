@@ -1,5 +1,14 @@
 package org.tenten.tentenstomp.global.common.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum Transportation {
-    CAR, PUBLIC_TRANSPORTATION;
+    CAR("CAR"), PUBLIC_TRANSPORTATION("PUBLIC_TRANSPORTATION");
+
+    private final String name;
+
+    Transportation(String name) {
+        this.name = name;
+    }
 }

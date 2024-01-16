@@ -50,6 +50,9 @@ public class Trip extends BaseTimeEntity {
     @Convert(converter = MapConverter.class)
     @Column(columnDefinition = "JSON")
     private Map<String, Integer> tripPathPriceMap;
+    @Convert(converter = MapConverter.class)
+    @Column(columnDefinition = "JSON")
+    private Map<String, String> tripTransportationMap;
 
     @OneToMany(mappedBy = "trip", fetch = LAZY, cascade = REMOVE)
     private final List<TripMember> tripMembers = new ArrayList<>();

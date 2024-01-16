@@ -67,4 +67,9 @@ public class TripController {
     public void updateTripBudget(@DestinationVariable String tripId, @Payload TripBudgetUpdateMsg tripBudgetUpdateMsg) {
         tripService.updateTripBudget(tripId, tripBudgetUpdateMsg);
     }
+
+    @MessageMapping("/trips/{tripId}/updateTransportation")
+    public void updateTransportation(@DestinationVariable String tripId, @Payload TripTransportationUpdateMsg tripTransportationUpdateMsg) {
+        tripService.updateTripTransportation(tripId, tripTransportationUpdateMsg);
+    }
 }

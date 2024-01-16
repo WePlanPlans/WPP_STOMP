@@ -182,5 +182,8 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
 
+    @Transactional
+    public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
 
+    }
 }
