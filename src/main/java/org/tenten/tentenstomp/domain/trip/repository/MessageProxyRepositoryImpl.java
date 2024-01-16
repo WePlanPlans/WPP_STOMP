@@ -64,11 +64,14 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository{
             return objectMapper.convertValue(cached, TripItemMsg.class);
 
         }
+        Trip trip = tripRepository.getReferenceById(tripId);
+        Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
+        Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
         List<TripItemInfo> tripInfos = tripItemRepository.getTripItemInfoByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
         List<TripItemInfoMsg> tripItemInfoMsgs = tripInfos.stream().map(t -> new TripItemInfoMsg(
             t.tripItemId(), t.tourItemId(), t.name(), t.thumbnailUrl(), Category.fromCode(t.contentTypeId()).getName(),  t.seqNum(), t.visitDate().toString(), t.price()
         )).toList();
-        TripItemMsg tripItemMsg = new TripItemMsg(tripId, visitDate, tripItemInfoMsgs);
+        TripItemMsg tripItemMsg = new TripItemMsg(tripId, visitDate, transportation, tripItemInfoMsgs);
         redisCache.save(TRIP_ITEM, Long.toString(tripId), visitDate, tripItemMsg);
         return tripItemMsg;
 
@@ -83,7 +86,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository{
         Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
         Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(tripItemRepository.findTripPlaceByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate)), transportation);
-        TripPathMsg tripPathMsg = new TripPathMsg(tripId, visitDate, tripPath.tripPathInfoMsgs());
+        TripPathMsg tripPathMsg = new TripPathMsg(tripId, visitDate, transportation, tripPath.tripPathInfoMsgs());
         redisCache.save(PATH, Long.toString(tripId), visitDate, tripPathMsg);
         return tripPathMsg;
 
