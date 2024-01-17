@@ -2,13 +2,19 @@ package org.tenten.tentenstomp.domain.trip.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripItemAddResponse;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
-import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
+import org.tenten.tentenstomp.global.common.constant.ResponseConstant;
+import org.tenten.tentenstomp.global.response.GlobalDataResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,12 +22,13 @@ import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
 public class TripController {
 
     private final TripService tripService;
-    private final KafkaProducer kafkaProducer;
-    /*
-    TODO : 백엔드에서 예외가 발생하면, 프론트로 예외 발생하기 전 시점 데이터를 보내줘야하는데, 이걸 어떻게 할 수 있을까
-    TODO : 실시간 편집인데, 노션 처럼 누가 어떤 것을 변경했는지 알려줄 필요가 있지 않을까?
-     */
 
+    @PostMapping("/trips/{tripId}")
+    public ResponseEntity<GlobalDataResponse<TripItemAddResponse>> addTripItemFromMainPage(
+        @PathVariable Long tripId,
+        @RequestBody TripItemAddRequest tripItemAddRequest) {
+        return ResponseEntity.ok(GlobalDataResponse.ok(ResponseConstant.SUCCESS, tripService.addTripItemFromMainPage(tripId, tripItemAddRequest)));
+    }
 
     @MessageMapping("/trips/{tripId}/connectMember")
     public void connectMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
