@@ -9,8 +9,6 @@ public record TripInfoMsg(
     Long numberOfPeople,
     String tripName,
     TripStatus tripStatus,
-    String area,
-    String subarea,
     Long budget
 ) {
 }
