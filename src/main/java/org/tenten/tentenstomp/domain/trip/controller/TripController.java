@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemAddResponse;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
-import org.tenten.tentenstomp.global.common.constant.ResponseConstant;
-import org.tenten.tentenstomp.global.response.GlobalDataResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,10 +22,10 @@ public class TripController {
     private final TripService tripService;
 
     @PostMapping("/trips/{tripId}")
-    public ResponseEntity<GlobalDataResponse<TripItemAddResponse>> addTripItemFromMainPage(
+    public ResponseEntity<TripItemAddResponse> addTripItemFromMainPage(
         @PathVariable Long tripId,
         @RequestBody TripItemAddRequest tripItemAddRequest) {
-        return ResponseEntity.ok(GlobalDataResponse.ok(ResponseConstant.SUCCESS, tripService.addTripItemFromMainPage(tripId, tripItemAddRequest)));
+        return ResponseEntity.ok(tripService.addTripItemFromMainPage(tripId, tripItemAddRequest));
     }
 
     @MessageMapping("/trips/{tripId}/connectMember")
