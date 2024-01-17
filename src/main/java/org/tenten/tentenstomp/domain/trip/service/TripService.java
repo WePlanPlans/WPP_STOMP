@@ -14,7 +14,6 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
-import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
@@ -28,6 +27,7 @@ import java.util.*;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
+import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
 import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
 
 @Service
@@ -138,9 +138,9 @@ public class TripService {
     }
 
     private void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
-        Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-        Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), transportation);
+        Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
+        String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
+        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), fromName(transportation));
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
@@ -149,8 +149,8 @@ public class TripService {
         tripRepository.save(trip);
 
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, transportation, tripItems);
-        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, transportation, tripPath.tripPathInfoMsgs());
+        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
+        TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
@@ -200,7 +200,7 @@ public class TripService {
     @Transactional
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
-        Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
+        Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String visitDate = tripTransportationUpdateMsg.visitDate();
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate));
 
@@ -208,7 +208,7 @@ public class TripService {
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
 
-        tripTransportationMap.put(visitDate, tripTransportationUpdateMsg.transportation());
+        tripTransportationMap.put(visitDate, tripTransportationUpdateMsg.transportation().getName());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
 
         trip.updateTripPathPriceMap(tripPathPriceMap);
