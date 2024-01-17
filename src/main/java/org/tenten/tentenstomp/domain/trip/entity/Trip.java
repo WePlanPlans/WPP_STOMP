@@ -95,6 +95,13 @@ public class Trip extends BaseTimeEntity {
         return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
+    public void updateTripPathPriceMap(Map<String, Integer> tripPathPriceMap) {
+        this.tripPathPriceMap = tripPathPriceMap;
+    }
+
+    public void updateTripTransportationMap(Map<String, Transportation> tripTransportationMap) {
+        this.tripTransportationMap = tripTransportationMap;
+    }
     public void updateTransportationPriceSum(Integer oldVisitDateTransportationPriceSum, Integer newVisitDateTransportationPriceSum) {
         this.transportationPriceSum -= oldVisitDateTransportationPriceSum;
         this.transportationPriceSum += newVisitDateTransportationPriceSum;
