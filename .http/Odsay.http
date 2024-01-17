@@ -16,5 +16,5 @@ GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=128
 Origin: https://weplanplans.site
 
 ### 대중교통 길 찾기
-GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=128.5163479914&SY=36.5390674494&EX=128.3383767680&EY=38.0731872541
+GET https://api.odsay.com/v1/api/searchPubTransPathT?apiKey={{odsay-key}}&SX=126.3745584698&SY=37.7045385779&EX=127.3780504440&EY=37.5971718095
 Origin: https://weplanplans.site
