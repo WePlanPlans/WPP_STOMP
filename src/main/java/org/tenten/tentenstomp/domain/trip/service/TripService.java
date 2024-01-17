@@ -139,15 +139,9 @@ public class TripService {
 
     private void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
         Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-        if (tripTransportationMap == null) {
-            tripTransportationMap = new HashMap<>();
-        }
         Transportation transportation = tripTransportationMap.getOrDefault(visitDate, CAR);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), transportation);
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-        if (tripPathPriceMap == null) {
-            tripPathPriceMap = new HashMap<>();
-        }
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
         trip.updateTripPathPriceMap(tripPathPriceMap);
@@ -207,17 +201,11 @@ public class TripService {
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-        if (tripTransportationMap == null) {
-            tripTransportationMap = new HashMap<>();
-        }
         String visitDate = tripTransportationUpdateMsg.visitDate();
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getId(), LocalDate.parse(visitDate));
 
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), tripTransportationUpdateMsg.transportation());
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-        if (tripPathPriceMap == null) {
-            tripPathPriceMap = new HashMap<>();
-        }
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
 
         tripTransportationMap.put(visitDate, tripTransportationUpdateMsg.transportation());

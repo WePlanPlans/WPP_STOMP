@@ -21,7 +21,10 @@ import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationR
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 
@@ -49,9 +52,6 @@ public class TripItemService {
             Long newPrice = priceUpdateMsg.price();
             Trip trip = tripItem.getTrip();
             Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-            if (tripTransportationMap == null) {
-                tripTransportationMap = new HashMap<>();
-            }
             Transportation transportation = tripTransportationMap.getOrDefault(priceUpdateMsg.visitDate(), CAR);
             trip.updateTripItemPriceSum(oldPrice, newPrice);
             tripItem.updatePrice(newPrice);
@@ -83,9 +83,6 @@ public class TripItemService {
             TripItem tripItem = optionalTripItem.get();
             Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
             Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-            if (tripTransportationMap == null) {
-                tripTransportationMap = new HashMap<>();
-            }
             LocalDate pastDate = tripItem.getVisitDate();
             Transportation pastDateTransportation = tripTransportationMap.getOrDefault(pastDate.toString(), CAR);
             LocalDate newDate = LocalDate.parse(visitDateUpdateMsg.newVisitDate());
@@ -115,9 +112,6 @@ public class TripItemService {
             TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems), newDateTransportation);
 
             Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-            if (tripPathPriceMap == null) {
-                tripPathPriceMap = new HashMap<>();
-            }
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(pastDate.toString(), 0), pastDateTripPath.pathPriceSum());
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(newDate.toString(), 0), newDateTripPath.pathPriceSum());
             tripPathPriceMap.put(pastDate.toString(), pastDateTripPath.pathPriceSum());
@@ -151,9 +145,6 @@ public class TripItemService {
             TripItem tripItem = optionalTripItem.get();
             Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
             Map<String, Transportation> tripTransportationMap = trip.getTripTransportationMap();
-            if (tripTransportationMap == null) {
-                tripTransportationMap = new HashMap<>();
-            }
             LocalDate visitDate = tripItem.getVisitDate();
             Transportation transportation = tripTransportationMap.getOrDefault(visitDate.toString(), CAR);
 
@@ -173,9 +164,6 @@ public class TripItemService {
             tripItemRepository.delete(tripItem);
             TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems), transportation);
             Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-            if (tripPathPriceMap == null) {
-                tripPathPriceMap = new HashMap<>();
-            }
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
             tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
             trip.updateTripTransportationMap(tripTransportationMap);
