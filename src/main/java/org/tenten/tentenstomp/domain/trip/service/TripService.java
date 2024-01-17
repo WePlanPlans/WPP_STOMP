@@ -217,4 +217,17 @@ public class TripService {
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
+    @Transactional
+    public TripItemAddResponse addTripItemFromMainPage(Long tripId, TripItemAddRequest tripItemAddRequest) {
+        Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+        List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(tripItemAddRequest.visitDate()));
+        LocalDate visitDate = LocalDate.parse(tripItemAddRequest.visitDate());
+        TripItem entity = TripItemCreateRequest.toEntity(tourItemRepository.getReferenceById(tripItemAddRequest.tourItemId()), trip, (long) tripItems.size() + 1, visitDate);
+        tripItemRepository.save(entity);
+        tripItems.add(entity);
+
+        updateBudgetAndItemsAndPath(trip, tripItems, tripItemAddRequest.visitDate());
+
+        return new TripItemAddResponse(trip.getId(), entity.getId(), tripItemAddRequest.tourItemId(), tripItemAddRequest.visitDate());
+    }
 }
