@@ -190,7 +190,7 @@ public class TripService {
         } else {
             tripStatus = ING;
         }
-        TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getArea(), trip.getSubarea(), trip.getBudget());
+        TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getBudget());
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }

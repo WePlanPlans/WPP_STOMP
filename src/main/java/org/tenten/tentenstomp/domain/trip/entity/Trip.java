@@ -38,8 +38,6 @@ public class Trip extends BaseTimeEntity {
     private Long numberOfPeople; // 인원수
     private LocalDate startDate;
     private LocalDate endDate;
-    private String area;
-    private String subarea;
     private Boolean isDeleted;
     private String tripName;
     private Long budget;
@@ -69,8 +67,6 @@ public class Trip extends BaseTimeEntity {
         this.endDate = LocalDate.parse(request.endDate());
         this.numberOfPeople = request.numberOfPeople();
         this.tripName = request.tripName();
-        this.area = request.area();
-        this.subarea = request.subarea();
         this.budget = request.budget();
         LocalDate currentDate = LocalDate.now();
 
@@ -83,8 +79,7 @@ public class Trip extends BaseTimeEntity {
             tripStatus = ING;
         }
 
-        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus,
-            this.getArea(), this.getSubarea(), this.getBudget());
+        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public TripInfoMsg toTripInfo() {
@@ -97,8 +92,7 @@ public class Trip extends BaseTimeEntity {
         } else {
             tripStatus = ING;
         }
-        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus,
-            this.getArea(), this.getSubarea(), this.getBudget());
+        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public void updateTransportationPriceSum(Integer oldVisitDateTransportationPriceSum, Integer newVisitDateTransportationPriceSum) {

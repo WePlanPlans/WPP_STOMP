@@ -5,8 +5,6 @@ public record TripUpdateMsg(
     String endDate,
     Long numberOfPeople,
     String tripName,
-    String area,
-    String subarea,
     Long budget
 ) {
 }
