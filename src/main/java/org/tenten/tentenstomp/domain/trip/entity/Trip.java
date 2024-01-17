@@ -9,7 +9,6 @@ import org.hibernate.annotations.ColumnDefault;
 import org.tenten.tentenstomp.domain.trip.dto.request.TripUpdateMsg;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg;
 import org.tenten.tentenstomp.global.common.BaseTimeEntity;
-import org.tenten.tentenstomp.global.common.enums.Transportation;
 import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.converter.MapConverter;
 
@@ -51,7 +50,7 @@ public class Trip extends BaseTimeEntity {
     private Map<String, Integer> tripPathPriceMap;
     @Convert(converter = MapConverter.class)
     @Column(columnDefinition = "JSON")
-    private Map<String, Transportation> tripTransportationMap;
+    private Map<String, String> tripTransportationMap;
 
     @OneToMany(mappedBy = "trip", fetch = LAZY, cascade = REMOVE)
     private final List<TripMember> tripMembers = new ArrayList<>();
@@ -99,7 +98,7 @@ public class Trip extends BaseTimeEntity {
         this.tripPathPriceMap = tripPathPriceMap;
     }
 
-    public void updateTripTransportationMap(Map<String, Transportation> tripTransportationMap) {
+    public void updateTripTransportationMap(Map<String, String> tripTransportationMap) {
         this.tripTransportationMap = tripTransportationMap;
     }
     public void updateTransportationPriceSum(Integer oldVisitDateTransportationPriceSum, Integer newVisitDateTransportationPriceSum) {
