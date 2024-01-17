@@ -1,15 +1,18 @@
 package org.tenten.tentenstomp.domain.trip.repository;
 
 
-import org.tenten.tentenstomp.domain.trip.dto.response.*;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripBudgetMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg;
+import org.tenten.tentenstomp.domain.trip.dto.response.TripPathMsg;
 import org.tenten.tentenstomp.domain.trip.entity.Trip;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public interface MessageProxyRepository {
 
-    TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashMap<Long, TripMemberInfoMsg>> tripConnectedMemberMap);
+    TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashSet<Long>> tripConnectedMemberMap);
 
     TripBudgetMsg getTripBudgetMsg(Trip trip);
 

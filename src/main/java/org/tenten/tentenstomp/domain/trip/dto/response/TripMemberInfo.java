@@ -1,10 +1,9 @@
 package org.tenten.tentenstomp.domain.trip.dto.response;
 
-public record TripMemberInfoMsg(
+public record TripMemberInfo(
     Long memberId,
     String name,
-    String thumbnailUrl,
-    Boolean connected
+    String thumbnailUrl
 ) {
 
 }
