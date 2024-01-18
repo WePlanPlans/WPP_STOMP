@@ -157,6 +157,7 @@ public class TripService {
     public void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
+        updateSeqNum(tripItems);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), fromName(transportation));
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
@@ -164,7 +165,6 @@ public class TripService {
         trip.updateTripPathPriceMap(tripPathPriceMap);
         tripRepository.save(trip);
 
-        updateSeqNum(tripItems);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
