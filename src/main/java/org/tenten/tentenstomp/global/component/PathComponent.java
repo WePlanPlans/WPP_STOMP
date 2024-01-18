@@ -28,12 +28,15 @@ public class PathComponent {
         List<PathCalculateRequest> pathCalculateRequests = toPathCalculateRequest(tripPlaceList);
         if (pathCalculateRequests.isEmpty()) {
             List<TripPathInfoMsg> pathInfoMsgs = new ArrayList<>();
-            TripPlace tripPlace = tripPlaceList.get(0);
-            pathInfoMsgs.add(new TripPathInfoMsg(
-                tripPlace.tripItemId(), tripPlace.tripItemId(), tripPlace.seqNum(), tripPlace.seqNum(),
-                tripPlace.longitude(), tripPlace.latitude(), tripPlace.longitude(), tripPlace.latitude(), new PathInfo(0, 0.0, 0L)
-            ));
+            if (!tripPlaceList.isEmpty()) {
+                TripPlace tripPlace = tripPlaceList.get(0);
+                pathInfoMsgs.add(new TripPathInfoMsg(
+                    tripPlace.tripItemId(), tripPlace.tripItemId(), tripPlace.seqNum(), tripPlace.seqNum(),
+                    tripPlace.longitude(), tripPlace.latitude(), tripPlace.longitude(), tripPlace.latitude(), new PathInfo(0, 0.0, 0L)
+                ));
+            }
             return new TripPathCalculationResult(0, pathInfoMsgs);
+
         } else {
             Integer priceSum = 0;
             List<TripPathInfoMsg> pathInfoMsgs = new CopyOnWriteArrayList<>();

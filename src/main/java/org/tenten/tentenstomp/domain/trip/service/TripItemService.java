@@ -59,6 +59,7 @@ public class TripItemService {
             trip.updateTripItemPriceSum(oldPrice, newPrice);
             tripItem.updatePrice(newPrice);
             List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), parse(priceUpdateMsg.visitDate()));
+            updateSeqNum(tripItems);
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
             TripItemMsg tripItemMsg = fromTripItemList(trip.getId(), tripItem.getVisitDate().toString(), tripItems, tripItem.getId(), fromName(transportation), priceUpdateMsg);
 
@@ -116,6 +117,9 @@ public class TripItemService {
                 tripItem.updateVisitDate(parse(visitDateUpdateMsg.newVisitDate()));
                 newDateTripItems.add(tripItem);
 
+                updateSeqNum(newPastDateTripItems);
+                updateSeqNum(newDateTripItems);
+
                 TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newPastDateTripItems), fromName(pastDateTransportation));
                 TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems), fromName(newDateTransportation));
 
@@ -138,6 +142,14 @@ public class TripItemService {
 
         }
 
+    }
+
+    @Transactional(isolation = SERIALIZABLE)
+    public void updateSeqNum(List<TripItem> tripItems) {
+        for (int i = 0; i < tripItems.size(); i++) {
+            TripItem tripItem = tripItems.get(i);
+            tripItem.updateSeqNum(i + 1L);
+        }
     }
 
     @Transactional(isolation = SERIALIZABLE)
@@ -169,6 +181,7 @@ public class TripItemService {
                 }
                 newTripItems.add(newTripItem);
             }
+            updateSeqNum(newTripItems);
 
             tripItemRepository.delete(tripItem);
             TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems), fromName(transportation));

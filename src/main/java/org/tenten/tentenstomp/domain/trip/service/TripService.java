@@ -164,11 +164,20 @@ public class TripService {
         trip.updateTripPathPriceMap(tripPathPriceMap);
         tripRepository.save(trip);
 
+        updateSeqNum(tripItems);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
+    }
+
+    @Transactional(isolation = SERIALIZABLE)
+    public void updateSeqNum(List<TripItem> tripItems) {
+        for (int i = 0; i < tripItems.size(); i++) {
+            TripItem tripItem = tripItems.get(i);
+            tripItem.updateSeqNum(i + 1L);
+        }
     }
 
     @Transactional(isolation = SERIALIZABLE)
@@ -231,6 +240,7 @@ public class TripService {
         trip.updateTripTransportationMap(tripTransportationMap);
         tripRepository.save(trip);
 
+        updateSeqNum(tripItems);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripPath.tripPathInfoMsgs());

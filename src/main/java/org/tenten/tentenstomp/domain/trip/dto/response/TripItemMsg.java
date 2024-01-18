@@ -27,6 +27,7 @@ public record TripItemMsg(
         return new TripItemMsg(tripId, visitDate, transportation, tripItemInfoMsgs);
     }
 
+
     public static TripItemMsg fromTripItemList(Long tripId, String visitDate, List<TripItem> tripItems, Long tripItemId, Transportation transportation, TripItemPriceUpdateMsg updateMsg) {
         List<TripItemInfoMsg> tripItemInfoMsgs = new ArrayList<>();
         for (TripItem t : tripItems) {
