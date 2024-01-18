@@ -13,6 +13,7 @@ import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +40,31 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         }
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(Long.toString(tripId), new HashSet<>());
         Trip trip = tripRepository.getReferenceById(tripId);
-        TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            tripId,
-            memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
-                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
-            ).toList(),
-            trip.getNumberOfPeople()
-        );
+        List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
+            tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+        ).toList();
+        TripMemberMsg tripMemberMsg = sortTripMemberMsg(Long.toString(tripId), tripMembers, trip);
         redisCache.save(MEMBER, Long.toString(tripId), tripMemberMsg);
         return tripMemberMsg;
+    }
+
+    private static TripMemberMsg sortTripMemberMsg(String tripId, List<TripMemberInfoMsg> tripMembers, Trip trip) {
+        List<TripMemberInfoMsg> tripMemberInfoMsgs = new ArrayList<>();
+        for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
+            if (tripMemberMsg.connected()) {
+                tripMemberInfoMsgs.add(tripMemberMsg);
+            }
+        }
+        for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
+            if (!tripMemberMsg.connected()) {
+                tripMemberInfoMsgs.add(tripMemberMsg);
+            }
+        }
+        return new TripMemberMsg(
+            Long.parseLong(tripId),
+            tripMemberInfoMsgs,
+            trip.getNumberOfPeople()
+        );
     }
 
     @Transactional(readOnly = true)
