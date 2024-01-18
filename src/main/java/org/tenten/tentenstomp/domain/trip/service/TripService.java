@@ -50,15 +50,31 @@ public class TripService {
         Optional<TripMemberInfo> tripMemberInfoByMemberId = memberRepository.findTripMemberInfoByMemberId(memberConnectMsg.memberId());
         tripMemberInfoByMemberId.ifPresent(tripMemberInfoMsg -> connectedMember.add(tripMemberInfoByMemberId.get().memberId()));
 
-        TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            Long.parseLong(tripId),
-            memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
-                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
-            ).toList(),
-            trip.getNumberOfPeople()
-        );
+        List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
+            tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+        ).toList();
+        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripId, tripMembers, trip);
         tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
+    }
+
+    private static TripMemberMsg sortTripMemberMsg(String tripId, List<TripMemberInfoMsg> tripMembers, Trip trip) {
+        List<TripMemberInfoMsg> tripMemberInfoMsgs = new ArrayList<>();
+        for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
+            if (tripMemberMsg.connected()) {
+                tripMemberInfoMsgs.add(tripMemberMsg);
+            }
+        }
+        for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
+            if (!tripMemberMsg.connected()) {
+                tripMemberInfoMsgs.add(tripMemberMsg);
+            }
+        }
+        return new TripMemberMsg(
+            Long.parseLong(tripId),
+            tripMemberInfoMsgs,
+            trip.getNumberOfPeople()
+        );
     }
 
     @Transactional
