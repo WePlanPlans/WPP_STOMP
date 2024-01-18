@@ -140,3 +140,12 @@ Content-Type: application/json
   }
 }
 
+### test
+POST https://ws.weplanplans.site/trips/3
+Content-Type: application/json
+
+{
+  "tourItemId": "1",
+  "visitDate": "2024-01-07"
+}
+
