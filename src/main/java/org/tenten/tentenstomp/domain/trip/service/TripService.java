@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -43,7 +44,7 @@ public class TripService {
     private final MessageProxyRepository messageProxyRepository;
     private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
@@ -77,7 +78,7 @@ public class TripService {
         );
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void getConnectedMember(String tripId) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
@@ -92,7 +93,7 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void disconnectMember(String tripId, MemberDisconnectMsg memberDisconnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
@@ -110,7 +111,7 @@ public class TripService {
 
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(isolation = SERIALIZABLE)
     public void enterMember(String tripId, MemberConnectMsg memberConnectMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
@@ -122,7 +123,7 @@ public class TripService {
     }
 
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTrip(String tripId, TripUpdateMsg tripUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
 
@@ -136,7 +137,7 @@ public class TripService {
 
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(Long.parseLong(tripId), LocalDate.parse(tripItemAddMsg.visitDate()));
@@ -152,8 +153,8 @@ public class TripService {
         updateBudgetAndItemsAndPath(trip, tripItems, tripItemAddMsg.visitDate());
 
     }
-
-    private void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
+    @Transactional(isolation = SERIALIZABLE)
+    public void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), fromName(transportation));
@@ -170,7 +171,7 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<Long, Long> itemOrderMap = new HashMap<>();
@@ -185,7 +186,7 @@ public class TripService {
 
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(isolation = SERIALIZABLE)
     public void getPathAndItems(String tripId, PathAndItemRequestMsg pathAndItemRequestMsg) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
@@ -193,7 +194,7 @@ public class TripService {
         kafkaProducer.send(PATH, messageProxyRepository.getTripPathMsg(trip.getId(), pathAndItemRequestMsg.visitDate()));
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTripBudget(String tripId, TripBudgetUpdateMsg tripBudgetUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
 
@@ -212,7 +213,7 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
@@ -236,7 +237,7 @@ public class TripService {
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public TripItemAddResponse addTripItemFromMainPage(Long tripId, TripItemAddRequest tripItemAddRequest) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(tripItemAddRequest.visitDate()));

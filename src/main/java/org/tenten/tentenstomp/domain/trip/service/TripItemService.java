@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.time.LocalDate.parse;
+import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -39,7 +40,7 @@ public class TripItemService {
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -68,7 +69,7 @@ public class TripItemService {
 
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -139,7 +140,7 @@ public class TripItemService {
 
     }
 
-    @Transactional
+    @Transactional(isolation = SERIALIZABLE)
     public void deleteTripItem(String tripItemId, TripItemDeleteMsg tripItemDeleteMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
