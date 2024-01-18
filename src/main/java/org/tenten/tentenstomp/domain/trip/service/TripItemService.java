@@ -15,7 +15,6 @@ import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
 import org.tenten.tentenstomp.global.component.PathComponent;
-import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
 
@@ -26,10 +25,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.time.LocalDate.parse;
-import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
+import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.fromTripItems;
+import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class TripItemService {
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
 
-    @Transactional(isolation = SERIALIZABLE)
+    @Transactional
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -59,7 +59,6 @@ public class TripItemService {
             trip.updateTripItemPriceSum(oldPrice, newPrice);
             tripItem.updatePrice(newPrice);
             List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getId(), parse(priceUpdateMsg.visitDate()));
-            updateSeqNum(tripItems);
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
             TripItemMsg tripItemMsg = fromTripItemList(trip.getId(), tripItem.getVisitDate().toString(), tripItems, tripItem.getId(), fromName(transportation), priceUpdateMsg);
 
@@ -70,7 +69,7 @@ public class TripItemService {
 
     }
 
-    @Transactional(isolation = SERIALIZABLE)
+    @Transactional
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -120,8 +119,8 @@ public class TripItemService {
                 updateSeqNum(newPastDateTripItems);
                 updateSeqNum(newDateTripItems);
 
-                TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newPastDateTripItems), fromName(pastDateTransportation));
-                TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newDateTripItems), fromName(newDateTransportation));
+                TripPathCalculationResult pastDateTripPath = pathComponent.getTripPath(fromTripItems(newPastDateTripItems), fromName(pastDateTransportation));
+                TripPathCalculationResult newDateTripPath = pathComponent.getTripPath(fromTripItems(newDateTripItems), fromName(newDateTransportation));
 
                 Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
                 trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(pastDate.toString(), 0), pastDateTripPath.pathPriceSum());
@@ -144,15 +143,7 @@ public class TripItemService {
 
     }
 
-    @Transactional(isolation = SERIALIZABLE)
-    public void updateSeqNum(List<TripItem> tripItems) {
-        for (int i = 0; i < tripItems.size(); i++) {
-            TripItem tripItem = tripItems.get(i);
-            tripItem.updateSeqNum(i + 1L);
-        }
-    }
-
-    @Transactional(isolation = SERIALIZABLE)
+    @Transactional
     public void deleteTripItem(String tripItemId, TripItemDeleteMsg tripItemDeleteMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -184,7 +175,7 @@ public class TripItemService {
             updateSeqNum(newTripItems);
 
             tripItemRepository.delete(tripItem);
-            TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(newTripItems), fromName(transportation));
+            TripPathCalculationResult tripPath = pathComponent.getTripPath(fromTripItems(newTripItems), fromName(transportation));
             Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
             trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate.toString(), 0), tripPath.pathPriceSum());
             tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());

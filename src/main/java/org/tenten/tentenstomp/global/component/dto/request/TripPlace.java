@@ -12,14 +12,7 @@ public record TripPlace(
     Long price
 ) {
     public static List<TripPlace> fromTripItems(List<TripItem> tripItems) {
-        List<TripPlace> list = new java.util.ArrayList<>(tripItems.stream().map(t -> new TripPlace(t.getId(), t.getSeqNum(), t.getTourItem().getLongitude(), t.getTourItem().getLatitude(), t.getPrice())).toList());
-        list.sort((a, b) -> {
-            if (!a.seqNum().equals(b.seqNum())) {
 
-                return Integer.parseInt(Long.toString(a.seqNum() - b.seqNum()));
-            }
-            return Integer.parseInt(Long.toString(a.tripItemId() - b.tripItemId()));
-        });
-        return list;
+        return new java.util.ArrayList<>(tripItems.stream().map(t -> new TripPlace(t.getId(), t.getSeqNum(), t.getTourItem().getLongitude(), t.getTourItem().getLatitude(), t.getPrice())).toList());
     }
 }
