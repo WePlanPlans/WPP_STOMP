@@ -61,7 +61,6 @@ public class TripItemService {
             TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
             TripItemMsg tripItemMsg = fromTripItemList(trip.getId(), tripItem.getVisitDate().toString(), tripItems, tripItem.getId(), fromName(transportation), priceUpdateMsg);
 
-            trip.updateTripTransportationMap(tripTransportationMap);
             tripRepository.save(trip);
 
             kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg);
@@ -83,7 +82,7 @@ public class TripItemService {
             );
         } else {
             TripItem tripItem = optionalTripItem.get();
-            Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
+            Trip trip = tripItem.getTrip();
             Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
             LocalDate pastDate = tripItem.getVisitDate();
             String pastDateTransportation = tripTransportationMap.getOrDefault(pastDate.toString(), CAR.getName());
@@ -124,7 +123,6 @@ public class TripItemService {
                 trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(newDate.toString(), 0), newDateTripPath.pathPriceSum());
                 tripPathPriceMap.put(pastDate.toString(), pastDateTripPath.pathPriceSum());
                 tripPathPriceMap.put(newDate.toString(), newDateTripPath.pathPriceSum());
-                trip.updateTripTransportationMap(tripTransportationMap);
                 trip.updateTripPathPriceMap(tripPathPriceMap);
                 tripRepository.save(trip);
 
@@ -153,7 +151,7 @@ public class TripItemService {
             );
         } else {
             TripItem tripItem = optionalTripItem.get();
-            Trip trip = tripRepository.getReferenceById(tripItem.getTrip().getId());
+            Trip trip = tripItem.getTrip();
             Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
             LocalDate visitDate = tripItem.getVisitDate();
             String transportation = tripTransportationMap.getOrDefault(visitDate.toString(), CAR.getName());
