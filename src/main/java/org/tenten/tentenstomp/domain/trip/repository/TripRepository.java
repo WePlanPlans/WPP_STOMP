@@ -14,6 +14,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     @Query("SELECT t FROM Trip t JOIN FETCH t.tripItems WHERE t.id = :tripId")
     Optional<Trip> findTripByTripId(@Param("tripId") Long tripId);
     @Lock(PESSIMISTIC_WRITE)
-    @Query("SELECT t FROM Trip t JOIN FETCH t.tripItems WHERE t.id = :tripId")
+    @Query("SELECT t FROM Trip t LEFT OUTER JOIN FETCH t.tripItems WHERE t.id = :tripId")
     Optional<Trip> findTripForUpdate(@Param("tripId") Long tripId);
 }
