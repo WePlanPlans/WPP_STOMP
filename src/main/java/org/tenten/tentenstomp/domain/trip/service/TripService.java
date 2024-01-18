@@ -48,8 +48,7 @@ public class TripService {
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        Optional<TripMemberInfo> tripMemberInfoByMemberId = memberRepository.findTripMemberInfoByMemberId(memberConnectMsg.memberId());
-        tripMemberInfoByMemberId.ifPresent(tripMemberInfoMsg -> connectedMember.add(tripMemberInfoByMemberId.get().memberId()));
+        connectedMember.add(memberConnectMsg.memberId());
 
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
@@ -157,6 +156,7 @@ public class TripService {
     public void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
+        updateSeqNum(tripItems);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), fromName(transportation));
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
@@ -164,7 +164,6 @@ public class TripService {
         trip.updateTripPathPriceMap(tripPathPriceMap);
         tripRepository.save(trip);
 
-        updateSeqNum(tripItems);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
