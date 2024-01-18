@@ -161,7 +161,6 @@ public class TripService {
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
         trip.updateTripPathPriceMap(tripPathPriceMap);
-        trip.updateTripTransportationMap(tripTransportationMap);
         tripRepository.save(trip);
 
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
