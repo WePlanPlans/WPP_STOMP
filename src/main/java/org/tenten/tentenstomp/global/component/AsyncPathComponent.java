@@ -29,7 +29,7 @@ public class AsyncPathComponent {
         } else {
             pathInfo = odsayComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
         }
-        log.info("from " + fromPlace.seqNum() + " to " + toPlace.seqNum() + " executionTime : " + ((System.currentTimeMillis() - startTime) / 1000.0));
+        log.info("from id "+fromPlace.tripItemId()+" to id "+toPlace.tripItemId()+" from seqNum " + fromPlace.seqNum() + " to seqNum " + toPlace.seqNum() + " executionTime : " + ((System.currentTimeMillis() - startTime) / 1000.0));
         pathInfoMsgs.add(new TripPathInfoMsg(fromPlace.tripItemId(), toPlace.tripItemId(), fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(),  pathInfo));
     }
 }
