@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -165,7 +166,7 @@ public class TripService {
         tripRepository.save(trip);
 
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
+        TripItemMsg tripItemMsg = fromTripItemList(trip.getId(), visitDate, fromName(transportation), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
@@ -234,7 +235,7 @@ public class TripService {
 
         updateSeqNum(tripItems);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = TripItemMsg.fromTripItemList(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripItems);
+        TripItemMsg tripItemMsg = fromTripItemList(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getId(), visitDate, tripTransportationUpdateMsg.transportation(), tripPath.tripPathInfoMsgs());
 
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
