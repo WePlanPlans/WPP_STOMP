@@ -20,6 +20,7 @@ import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
+import org.tenten.tentenstomp.global.util.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -43,13 +44,14 @@ public class TripService {
     private final KafkaProducer kafkaProducer;
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
+    private final SecurityUtil securityUtil;
     private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
 
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        connectedMember.add(memberConnectMsg.memberId());
+        connectedMember.add(securityUtil.getMemberId(memberConnectMsg.token()));
 
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(Long.parseLong(tripId)).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
@@ -97,7 +99,7 @@ public class TripService {
     public void disconnectMember(String tripId, MemberDisconnectMsg memberDisconnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
-        connectedMember.remove(memberDisconnectMsg.memberId());
+        connectedMember.remove(securityUtil.getMemberId(memberDisconnectMsg.token()));
 
         TripMemberMsg tripMemberMsg = new TripMemberMsg(
             Long.parseLong(tripId),
