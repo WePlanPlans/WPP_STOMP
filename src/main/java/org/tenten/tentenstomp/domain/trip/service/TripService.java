@@ -114,7 +114,7 @@ public class TripService {
     }
 
     @Transactional
-    public void enterMember(String tripId, MemberConnectMsg memberConnectMsg) {
+    public void enterMember(String tripId) {
         Trip trip = tripRepository.getReferenceById(Long.parseLong(tripId));
 
         kafkaProducer.send(MEMBER, messageProxyRepository.getTripMemberMsg(trip.getId(), tripConnectedMemberMap));

@@ -44,8 +44,8 @@ public class TripController {
     }
 
     @MessageMapping("/trips/{tripId}/enterMember")
-    public void enterMember(@DestinationVariable String tripId, @Payload MemberConnectMsg memberConnectMsg) {
-        tripService.enterMember(tripId, memberConnectMsg);
+    public void enterMember(@DestinationVariable String tripId) {
+        tripService.enterMember(tripId);
     }
 
     @MessageMapping("/trips/{tripId}/info")
