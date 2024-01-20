@@ -23,7 +23,7 @@ public class TripController {
 
     @PostMapping("/trips/{tripId}")
     public ResponseEntity<TripItemAddResponse> addTripItemFromMainPage(
-        @PathVariable(name = "tripId") Long tripId,
+        @PathVariable(name = "tripId") String tripId,
         @RequestBody TripItemAddRequest tripItemAddRequest) {
         return ResponseEntity.ok(tripService.addTripItemFromMainPage(tripId, tripItemAddRequest));
     }

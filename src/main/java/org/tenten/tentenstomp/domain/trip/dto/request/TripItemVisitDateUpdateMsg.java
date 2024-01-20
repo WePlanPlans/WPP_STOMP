@@ -1,7 +1,7 @@
 package org.tenten.tentenstomp.domain.trip.dto.request;
 
 public record TripItemVisitDateUpdateMsg(
-    Long tripId,
+    String tripId,
     String oldVisitDate,
     String newVisitDate
 ) {

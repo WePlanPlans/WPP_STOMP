@@ -12,6 +12,7 @@ import org.tenten.tentenstomp.global.cache.RedisCache;
 import org.tenten.tentenstomp.global.common.enums.Category;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
+import org.tenten.tentenstomp.global.exception.GlobalException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -36,18 +38,18 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
     private final PathComponent pathComponent;
 
     @Transactional(readOnly = true)
-    public TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashSet<Long>> tripConnectedMemberMap) {
-        Object cached = redisCache.get(MEMBER, Long.toString(tripId));
+    public TripMemberMsg getTripMemberMsg(String tripId, Map<String, HashSet<Long>> tripConnectedMemberMap) {
+        Object cached = redisCache.get(MEMBER, tripId);
         if (cached != null) {
             return objectMapper.convertValue(cached, TripMemberMsg.class);
         }
-        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(Long.toString(tripId), new HashSet<>());
-        Trip trip = tripRepository.getReferenceById(tripId);
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
         ).toList();
-        TripMemberMsg tripMemberMsg = sortTripMemberMsg(Long.toString(tripId), tripMembers, trip);
-        redisCache.save(MEMBER, Long.toString(tripId), tripMemberMsg);
+        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripId, tripMembers, trip);
+        redisCache.save(MEMBER, tripId, tripMemberMsg);
         return tripMemberMsg;
     }
 
@@ -64,7 +66,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
             }
         }
         return new TripMemberMsg(
-            Long.parseLong(tripId),
+            tripId,
             tripMemberInfoMsgs,
             trip.getNumberOfPeople()
         );
@@ -73,25 +75,25 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
     @Transactional(readOnly = true)
     public TripBudgetMsg getTripBudgetMsg(Trip trip) {
 
-        Object cached = redisCache.get(BUDGET, Long.toString(trip.getId()));
+        Object cached = redisCache.get(BUDGET, trip.getEncryptedId());
         if (cached != null) {
             return objectMapper.convertValue(cached, TripBudgetMsg.class);
         }
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
-            trip.getId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
+            trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
         );
         redisCache.save(BUDGET, Long.toString(trip.getId()), tripBudgetMsg);
         return tripBudgetMsg;
     }
 
     @Transactional(readOnly = true)
-    public TripItemMsg getTripItemMsg(Long tripId, String visitDate) {
-        Object cached = redisCache.get(TRIP_ITEM, Long.toString(tripId), visitDate);
+    public TripItemMsg getTripItemMsg(String tripId, String visitDate) {
+        Object cached = redisCache.get(TRIP_ITEM, tripId, visitDate);
         if (cached != null) {
             return objectMapper.convertValue(cached, TripItemMsg.class);
 
         }
-        Trip trip = tripRepository.getReferenceById(tripId);
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
@@ -100,25 +102,25 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
             t.getId(), t.getTourItem().getId(), t.getTourItem().getTitle(), t.getTourItem().getOriginalThumbnailUrl(), Category.fromCode(t.getTourItem().getContentTypeId()).getName(), t.getSeqNum(), t.getVisitDate().toString(), t.getPrice()
         )).toList();
         TripItemMsg tripItemMsg = new TripItemMsg(tripId, visitDate, fromName(transportation), tripItemInfoMsgs);
-        redisCache.save(TRIP_ITEM, Long.toString(tripId), visitDate, tripItemMsg);
+        redisCache.save(TRIP_ITEM, tripId, visitDate, tripItemMsg);
         return tripItemMsg;
 
     }
 
     @Transactional(readOnly = true)
-    public TripPathMsg getTripPathMsg(Long tripId, String visitDate) {
-        Object cached = redisCache.get(PATH, Long.toString(tripId), visitDate);
+    public TripPathMsg getTripPathMsg(String tripId, String visitDate) {
+        Object cached = redisCache.get(PATH, tripId, visitDate);
         if (cached != null) {
             return objectMapper.convertValue(cached, TripPathMsg.class);
         }
-        Trip trip = tripRepository.getReferenceById(tripId);
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
         updateSeqNum(tripItems);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(fromTripItems(tripItems), fromName(transportation));
         TripPathMsg tripPathMsg = new TripPathMsg(tripId, visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
-        redisCache.save(PATH, Long.toString(tripId), visitDate, tripPathMsg);
+        redisCache.save(PATH, tripId, visitDate, tripPathMsg);
         return tripPathMsg;
 
     }
