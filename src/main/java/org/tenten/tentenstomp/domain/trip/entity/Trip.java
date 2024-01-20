@@ -41,6 +41,7 @@ public class Trip extends BaseTimeEntity {
     private String tripName;
     private Long budget;
     private String joinCode;
+    private String encryptedId;
     @ColumnDefault("0")
     private Long tripItemPriceSum;
     @ColumnDefault("0")
