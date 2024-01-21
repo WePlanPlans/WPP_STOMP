@@ -1,7 +1,7 @@
 package org.tenten.tentenstomp.domain.trip.dto.response;
 
 public record TripBudgetMsg(
-    Long tripId,
+    String tripId,
     Long budget,
     Long calculatedPrice
 ) {

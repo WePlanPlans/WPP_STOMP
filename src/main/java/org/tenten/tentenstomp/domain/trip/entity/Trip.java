@@ -79,7 +79,7 @@ public class Trip extends BaseTimeEntity {
             tripStatus = ING;
         }
 
-        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
+        return new TripInfoMsg(this.getEncryptedId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public TripInfoMsg toTripInfo() {
@@ -92,7 +92,7 @@ public class Trip extends BaseTimeEntity {
         } else {
             tripStatus = ING;
         }
-        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
+        return new TripInfoMsg(this.getEncryptedId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public void updateTripPathPriceMap(Map<String, Integer> tripPathPriceMap) {
