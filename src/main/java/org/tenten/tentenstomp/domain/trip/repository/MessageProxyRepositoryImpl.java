@@ -82,7 +82,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
             trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
         );
-        redisCache.save(BUDGET, Long.toString(trip.getId()), tripBudgetMsg);
+        redisCache.save(BUDGET, trip.getEncryptedId(), tripBudgetMsg);
         return tripBudgetMsg;
     }
 
