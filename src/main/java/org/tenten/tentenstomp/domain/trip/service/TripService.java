@@ -255,4 +255,22 @@ public class TripService {
 
         return new TripItemAddResponse(trip.getEncryptedId(), entity.getId(), Long.parseLong(tripItemAddRequest.tourItemId()), tripItemAddRequest.visitDate());
     }
+
+    @Transactional
+    public void deleteTripMember(String tripId, Long memberId) {
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
+        connectedMember.remove(memberId);
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
+
+        TripMemberMsg tripMemberMsg = new TripMemberMsg(
+            tripId,
+            memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
+                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+            ).toList(),
+            trip.getNumberOfPeople()
+        );
+        tripConnectedMemberMap.put(tripId, connectedMember);
+        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
+
+    }
 }
