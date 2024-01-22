@@ -14,7 +14,6 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
-import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
@@ -26,11 +25,11 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg.fromEntity;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
-import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
 import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Service
@@ -203,16 +202,7 @@ public class TripService {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
 
         trip.updateBudget(tripBudgetUpdateMsg.budget());
-        LocalDate now = LocalDate.now();
-        TripStatus tripStatus;
-        if (now.isBefore(trip.getStartDate())) {
-            tripStatus = BEFORE;
-        } else if (now.isAfter(trip.getEndDate())) {
-            tripStatus = AFTER;
-        } else {
-            tripStatus = ING;
-        }
-        TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getEncryptedId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getBudget());
+        TripInfoMsg tripInfoMsg = fromEntity(trip);
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
