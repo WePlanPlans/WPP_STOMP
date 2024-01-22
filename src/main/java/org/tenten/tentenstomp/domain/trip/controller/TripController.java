@@ -6,13 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemAddResponse;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
+
+import static org.tenten.tentenstomp.global.common.constant.ResponseConstant.DELETED;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +25,12 @@ public class TripController {
         @PathVariable(name = "tripId") String tripId,
         @RequestBody TripItemAddRequest tripItemAddRequest) {
         return ResponseEntity.ok(tripService.addTripItemFromMainPage(tripId, tripItemAddRequest));
+    }
+
+    @DeleteMapping("/trips/{tripId}/{memberId}")
+    public ResponseEntity<String> deleteMember(@PathVariable(name = "tripId") String tripId, @PathVariable(name = "memberId") Long memberId) {
+        tripService.deleteTripMember(tripId, memberId);
+        return ResponseEntity.ok(DELETED);
     }
 
     @MessageMapping("/trips/{tripId}/connectMember")

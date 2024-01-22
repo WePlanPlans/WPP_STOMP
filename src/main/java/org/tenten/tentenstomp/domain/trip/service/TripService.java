@@ -14,9 +14,7 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
-import org.tenten.tentenstomp.global.common.enums.TripStatus;
 import org.tenten.tentenstomp.global.component.PathComponent;
-import org.tenten.tentenstomp.global.component.dto.request.TripPlace;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.exception.GlobalException;
 import org.tenten.tentenstomp.global.messaging.kafka.producer.KafkaProducer;
@@ -26,11 +24,14 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg.fromEntity;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
-import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg.fromEntity;
+import static org.tenten.tentenstomp.global.common.constant.TopicConstant.PATH;
+import static org.tenten.tentenstomp.global.common.constant.TopicConstant.TRIP_ITEM;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
-import static org.tenten.tentenstomp.global.common.enums.TripStatus.*;
+import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.fromTripItems;
 import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Service
@@ -56,12 +57,12 @@ public class TripService {
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
         ).toList();
-        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripId, tripMembers, trip);
+        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripMembers, trip);
         tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
     }
 
-    private static TripMemberMsg sortTripMemberMsg(String tripId, List<TripMemberInfoMsg> tripMembers, Trip trip) {
+    private static TripMemberMsg sortTripMemberMsg(List<TripMemberInfoMsg> tripMembers, Trip trip) {
         List<TripMemberInfoMsg> tripMemberInfoMsgs = new ArrayList<>();
         for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
             if (tripMemberMsg.connected()) {
@@ -73,26 +74,13 @@ public class TripService {
                 tripMemberInfoMsgs.add(tripMemberMsg);
             }
         }
-        return new TripMemberMsg(
-            tripId,
-            tripMemberInfoMsgs,
-            trip.getNumberOfPeople()
-        );
+        return fromEntity(trip, tripMemberInfoMsgs);
     }
 
     @Transactional
     public void getConnectedMember(String tripId) {
-        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
         Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
-
-        TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            tripId,
-            memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
-                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
-            ).toList(),
-            trip.getNumberOfPeople()
-        );
-        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
+        kafkaProducer.sendAndSaveToRedis(messageProxyRepository.getTripMemberMsg(trip.getEncryptedId(), tripConnectedMemberMap));
     }
 
     @Transactional
@@ -101,13 +89,11 @@ public class TripService {
         Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
         connectedMember.remove(securityUtil.getMemberId(memberDisconnectMsg.token()));
 
-        TripMemberMsg tripMemberMsg = new TripMemberMsg(
-            tripId,
-            memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
-                tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
-            ).toList(),
-            trip.getNumberOfPeople()
-        );
+        List<TripMemberInfoMsg> tripMemberInfoMsgs = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
+            tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+        ).toList();
+
+        TripMemberMsg tripMemberMsg = fromEntity(trip, tripMemberInfoMsgs);
         tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
 
@@ -117,11 +103,13 @@ public class TripService {
     public void enterMember(String tripId) {
         Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
 
-        kafkaProducer.send(MEMBER, messageProxyRepository.getTripMemberMsg(trip.getEncryptedId(), tripConnectedMemberMap));
-        kafkaProducer.send(TRIP_INFO, trip.toTripInfo());
-        kafkaProducer.send(TRIP_ITEM, messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), trip.getStartDate().toString()));
-        kafkaProducer.send(PATH, messageProxyRepository.getTripPathMsg(trip.getEncryptedId(), trip.getStartDate().toString()));
-        kafkaProducer.send(BUDGET, messageProxyRepository.getTripBudgetMsg(trip));
+        kafkaProducer.sendWithOutCaching(
+            messageProxyRepository.getTripMemberMsg(trip.getEncryptedId(), tripConnectedMemberMap),
+            trip.toTripInfo(),
+            messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), trip.getStartDate().toString()),
+            messageProxyRepository.getTripPathMsg(trip.getEncryptedId(), trip.getStartDate().toString()),
+            messageProxyRepository.getTripBudgetMsg(trip)
+        );
     }
 
 
@@ -130,9 +118,7 @@ public class TripService {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
 
         TripInfoMsg tripInfoMsg = trip.changeTripInfo(tripUpdateMsg);
-        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
-            trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
-        );
+        TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
         tripRepository.save(trip);
 
         kafkaProducer.sendAndSaveToRedis(tripInfoMsg, tripBudgetMsg);
@@ -155,19 +141,20 @@ public class TripService {
         updateBudgetAndItemsAndPath(trip, tripItems, tripItemAddMsg.visitDate());
 
     }
+
     @Transactional
     public void updateBudgetAndItemsAndPath(Trip trip, List<TripItem> tripItems, String visitDate) {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         updateSeqNum(tripItems);
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), fromName(transportation));
+        TripPathCalculationResult tripPath = pathComponent.getTripPath(fromTripItems(tripItems), fromName(transportation));
         Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
         tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
         trip.updateTripPathPriceMap(tripPathPriceMap);
         tripRepository.save(trip);
 
-        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
+        TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
         TripItemMsg tripItemMsg = fromTripItemList(trip.getEncryptedId(), visitDate, fromName(transportation), tripItems);
         TripPathMsg tripPathMsg = new TripPathMsg(trip.getEncryptedId(), visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
 
@@ -203,45 +190,23 @@ public class TripService {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
 
         trip.updateBudget(tripBudgetUpdateMsg.budget());
-        LocalDate now = LocalDate.now();
-        TripStatus tripStatus;
-        if (now.isBefore(trip.getStartDate())) {
-            tripStatus = BEFORE;
-        } else if (now.isAfter(trip.getEndDate())) {
-            tripStatus = AFTER;
-        } else {
-            tripStatus = ING;
-        }
-        TripInfoMsg tripInfoMsg = new TripInfoMsg(trip.getEncryptedId(), trip.getStartDate().toString(), trip.getEndDate().toString(), trip.getNumberOfPeople(), trip.getTripName(), tripStatus, trip.getBudget());
-        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
+        TripInfoMsg tripInfoMsg = fromEntity(trip);
+        TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
 
     @Transactional
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
-        Trip trip = tripRepository.findTripForUpdate(Long.parseLong(tripId)).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String visitDate = tripTransportationUpdateMsg.visitDate();
-        List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getEncryptedId(), LocalDate.parse(visitDate));
-
-        TripPathCalculationResult tripPath = pathComponent.getTripPath(TripPlace.fromTripItems(tripItems), tripTransportationUpdateMsg.transportation());
-        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
-        trip.updateTransportationPriceSum(tripPathPriceMap.getOrDefault(visitDate, 0), tripPath.pathPriceSum());
-
         tripTransportationMap.put(visitDate, tripTransportationUpdateMsg.transportation().getName());
-        tripPathPriceMap.put(visitDate, tripPath.pathPriceSum());
-
-        trip.updateTripPathPriceMap(tripPathPriceMap);
         trip.updateTripTransportationMap(tripTransportationMap);
-        tripRepository.save(trip);
+        List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(trip.getEncryptedId(), LocalDate.parse(visitDate));
+        updateBudgetAndItemsAndPath(trip, tripItems, visitDate);
 
-        updateSeqNum(tripItems);
-        TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum());
-        TripItemMsg tripItemMsg = fromTripItemList(trip.getEncryptedId(), visitDate, tripTransportationUpdateMsg.transportation(), tripItems);
-        TripPathMsg tripPathMsg = new TripPathMsg(trip.getEncryptedId(), visitDate, tripTransportationUpdateMsg.transportation(), tripPath.tripPathInfoMsgs());
-
-        kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
+
     @Transactional
     public TripItemAddResponse addTripItemFromMainPage(String tripId, TripItemAddRequest tripItemAddRequest) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -254,5 +219,19 @@ public class TripService {
         updateBudgetAndItemsAndPath(trip, tripItems, tripItemAddRequest.visitDate());
 
         return new TripItemAddResponse(trip.getEncryptedId(), entity.getId(), Long.parseLong(tripItemAddRequest.tourItemId()), tripItemAddRequest.visitDate());
+    }
+
+    @Transactional
+    public void deleteTripMember(String tripId, Long memberId) {
+        HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
+        connectedMember.remove(memberId);
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
+        List<TripMemberInfoMsg> tripMemberInfoMsgs = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
+            tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
+        ).toList();
+        TripMemberMsg tripMemberMsg = fromEntity(trip, tripMemberInfoMsgs);
+        tripConnectedMemberMap.put(tripId, connectedMember);
+        kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
+
     }
 }

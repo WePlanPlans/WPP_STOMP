@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg.fromEntity;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -48,12 +49,12 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
         ).toList();
-        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripId, tripMembers, trip);
+        TripMemberMsg tripMemberMsg = sortTripMemberMsg(tripMembers, trip);
         redisCache.save(MEMBER, tripId, tripMemberMsg);
         return tripMemberMsg;
     }
 
-    private static TripMemberMsg sortTripMemberMsg(String tripId, List<TripMemberInfoMsg> tripMembers, Trip trip) {
+    private static TripMemberMsg sortTripMemberMsg(List<TripMemberInfoMsg> tripMembers, Trip trip) {
         List<TripMemberInfoMsg> tripMemberInfoMsgs = new ArrayList<>();
         for (TripMemberInfoMsg tripMemberMsg : tripMembers) {
             if (tripMemberMsg.connected()) {
@@ -65,11 +66,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
                 tripMemberInfoMsgs.add(tripMemberMsg);
             }
         }
-        return new TripMemberMsg(
-            tripId,
-            tripMemberInfoMsgs,
-            trip.getNumberOfPeople()
-        );
+        return fromEntity(trip, tripMemberInfoMsgs);
     }
 
     @Transactional(readOnly = true)
@@ -82,7 +79,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         TripBudgetMsg tripBudgetMsg = new TripBudgetMsg(
             trip.getEncryptedId(), trip.getBudget(), trip.getTripItemPriceSum() + trip.getTransportationPriceSum()
         );
-        redisCache.save(BUDGET, Long.toString(trip.getId()), tripBudgetMsg);
+        redisCache.save(BUDGET, trip.getEncryptedId(), tripBudgetMsg);
         return tripBudgetMsg;
     }
 
