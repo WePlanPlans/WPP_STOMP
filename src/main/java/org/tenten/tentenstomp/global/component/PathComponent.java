@@ -49,7 +49,7 @@ public class PathComponent {
                 }
             }
             for (TripPathInfoMsg tpm : pathInfoMsgs) {
-                if (tpm.pathInfo() != null) {
+                if (tpm.pathInfo().price() != -1) {
                     priceSum += tpm.pathInfo().price();
                 }
             }
