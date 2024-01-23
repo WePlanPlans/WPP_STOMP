@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.tenten.tentenstomp.domain.comment.entity.Comment;
 import org.tenten.tentenstomp.domain.review.entity.Review;
-import org.tenten.tentenstomp.domain.trip.entity.Trip;
-import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.entity.TripMember;
 import org.tenten.tentenstomp.global.common.BaseTimeEntity;
 import org.tenten.tentenstomp.global.common.enums.AgeType;
@@ -38,7 +36,6 @@ public class Member extends BaseTimeEntity {
     private Long id;
     private String email;
     private String password;
-    private String name; // 본명,
     private String nickname; // 닉네임
     private String profileImageUrl; // 프사 url
     @Convert(converter = Survey.SurveyConverter.class)
