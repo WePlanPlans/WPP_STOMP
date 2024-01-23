@@ -6,4 +6,5 @@ public class TopicConstant {
     public static final String PATH = "path";
     public static final String MEMBER = "connectedMember";
     public static final String BUDGET = "budget";
+    public static final String CURSOR = "cursor";
 }
