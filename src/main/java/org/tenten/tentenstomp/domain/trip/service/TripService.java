@@ -124,8 +124,8 @@ public class TripService {
         LocalDate currentDate = startDate;
         Integer transportationPriceSum = 0;
         Long itemPriceSum = 0L;
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
         while (!currentDate.isAfter(endDate)) {
-            Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
             transportationPriceSum += tripPathPriceMap.getOrDefault(currentDate.toString(), 0);
             itemPriceSum += tripItemRepository.findTripItemPriceSumByTripIdAndVisitDate(tripId, currentDate);
             currentDate = currentDate.plusDays(1L);
