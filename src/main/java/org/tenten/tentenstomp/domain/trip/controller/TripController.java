@@ -82,4 +82,9 @@ public class TripController {
     public void updateTransportation(@DestinationVariable String tripId, @Payload TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         tripService.updateTripTransportation(tripId, tripTransportationUpdateMsg);
     }
+
+    @MessageMapping("/trips/{tripId}/cursor")
+    public void updateUserCursor(@DestinationVariable String tripId, @Payload CursorUpdateMsg cursorUpdateMsg) {
+        tripService.updateCursor(tripId, cursorUpdateMsg);
+    }
 }

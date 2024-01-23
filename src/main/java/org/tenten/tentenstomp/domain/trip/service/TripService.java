@@ -3,6 +3,7 @@ package org.tenten.tentenstomp.domain.trip.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.tenten.tentenstomp.domain.member.entity.Member;
 import org.tenten.tentenstomp.domain.member.repository.MemberRepository;
 import org.tenten.tentenstomp.domain.tour.repository.TourItemRepository;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
@@ -47,7 +48,6 @@ public class TripService {
     private final MessageProxyRepository messageProxyRepository;
     private final SecurityUtil securityUtil;
     private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
-
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
@@ -233,5 +233,13 @@ public class TripService {
         tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
 
+    }
+
+    @Transactional
+    public void updateCursor(String tripId, CursorUpdateMsg cursorUpdateMsg) {
+        Long memberId = securityUtil.getMemberId(cursorUpdateMsg.token());
+        Member member = memberRepository.getReferenceById(memberId);
+        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y());
+        kafkaProducer.sendAndSaveToRedis(tripCursorMsg);
     }
 }
