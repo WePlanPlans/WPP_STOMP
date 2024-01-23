@@ -258,4 +258,28 @@ public class TripService {
         TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y());
         kafkaProducer.sendAndSaveToRedis(tripCursorMsg);
     }
+    @Transactional
+    public void updateTripDate(String tripId, LocalDate startDate, LocalDate endDate) {
+        Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
+        TripInfoMsg tripInfoMsg = TripInfoMsg.fromEntity(trip);
+
+
+        LocalDate currentDate = startDate;
+        Integer transportationPriceSum = 0;
+        Long itemPriceSum = 0L;
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        while (!currentDate.isAfter(endDate)) {
+            transportationPriceSum += tripPathPriceMap.getOrDefault(currentDate.toString(), 0);
+            itemPriceSum += tripItemRepository.findTripItemPriceSumByTripIdAndVisitDate(tripId, currentDate);
+            currentDate = currentDate.plusDays(1L);
+        }
+
+        trip.updateTripItemPriceSum(itemPriceSum);
+        trip.updateTransportationPriceSum(transportationPriceSum);
+
+        TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
+        tripRepository.save(trip);
+
+        kafkaProducer.sendAndSaveToRedis(tripInfoMsg, tripBudgetMsg);
+    }
 }

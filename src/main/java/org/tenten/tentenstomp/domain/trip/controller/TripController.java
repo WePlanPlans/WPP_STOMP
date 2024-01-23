@@ -11,7 +11,10 @@ import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemAddResponse;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
 
+import java.time.LocalDate;
+
 import static org.tenten.tentenstomp.global.common.constant.ResponseConstant.DELETED;
+import static org.tenten.tentenstomp.global.common.constant.ResponseConstant.UPDATED;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +34,15 @@ public class TripController {
     public ResponseEntity<String> deleteMember(@PathVariable(name = "tripId") String tripId, @PathVariable(name = "memberId") Long memberId) {
         tripService.deleteTripMember(tripId, memberId);
         return ResponseEntity.ok(DELETED);
+    }
+
+    @GetMapping("/trips/{tripId}/{startDate}/{endDate}")
+    public ResponseEntity<String> updateTripDate(
+        @PathVariable(name = "tripId") String tripId,
+        @PathVariable(name = "startDate") String startDate,
+        @PathVariable(name = "endDate") String endDate) {
+        tripService.updateTripDate(tripId, LocalDate.parse(startDate), LocalDate.parse(endDate));
+        return ResponseEntity.ok(UPDATED);
     }
 
     @MessageMapping("/trips/{tripId}/connectMember")
