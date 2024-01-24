@@ -12,11 +12,11 @@ import java.util.Map;
 
 public interface MessageProxyRepository {
 
-    TripMemberMsg getTripMemberMsg(Long tripId, Map<String, HashSet<Long>> tripConnectedMemberMap);
+    TripMemberMsg getTripMemberMsg(String tripId, Map<String, HashSet<Long>> tripConnectedMemberMap);
 
     TripBudgetMsg getTripBudgetMsg(Trip trip);
 
-    TripItemMsg getTripItemMsg(Long tripId, String visitDate);
+    TripItemMsg getTripItemMsg(String tripId, String visitDate);
 
-    TripPathMsg getTripPathMsg(Long tripId, String visitDate);
+    TripPathMsg getTripPathMsg(String tripId, String visitDate);
 }

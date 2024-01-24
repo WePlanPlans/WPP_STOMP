@@ -6,13 +6,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
 import org.tenten.tentenstomp.domain.trip.dto.response.TripItemAddResponse;
 import org.tenten.tentenstomp.domain.trip.service.TripService;
+
+import java.time.LocalDate;
+
+import static org.tenten.tentenstomp.global.common.constant.ResponseConstant.DELETED;
+import static org.tenten.tentenstomp.global.common.constant.ResponseConstant.UPDATED;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +25,24 @@ public class TripController {
 
     @PostMapping("/trips/{tripId}")
     public ResponseEntity<TripItemAddResponse> addTripItemFromMainPage(
-        @PathVariable(name = "tripId") Long tripId,
+        @PathVariable(name = "tripId") String tripId,
         @RequestBody TripItemAddRequest tripItemAddRequest) {
         return ResponseEntity.ok(tripService.addTripItemFromMainPage(tripId, tripItemAddRequest));
+    }
+
+    @DeleteMapping("/trips/{tripId}/{memberId}")
+    public ResponseEntity<String> deleteMember(@PathVariable(name = "tripId") String tripId, @PathVariable(name = "memberId") Long memberId) {
+        tripService.deleteTripMember(tripId, memberId);
+        return ResponseEntity.ok(DELETED);
+    }
+
+    @GetMapping("/trips/{tripId}/{startDate}/{endDate}")
+    public ResponseEntity<String> updateTripDate(
+        @PathVariable(name = "tripId") String tripId,
+        @PathVariable(name = "startDate") String startDate,
+        @PathVariable(name = "endDate") String endDate) {
+        tripService.updateTripDate(tripId, LocalDate.parse(startDate), LocalDate.parse(endDate));
+        return ResponseEntity.ok(UPDATED);
     }
 
     @MessageMapping("/trips/{tripId}/connectMember")
@@ -76,5 +93,10 @@ public class TripController {
     @MessageMapping("/trips/{tripId}/updateTransportation")
     public void updateTransportation(@DestinationVariable String tripId, @Payload TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         tripService.updateTripTransportation(tripId, tripTransportationUpdateMsg);
+    }
+
+    @MessageMapping("/trips/{tripId}/cursor")
+    public void updateUserCursor(@DestinationVariable String tripId, @Payload CursorUpdateMsg cursorUpdateMsg) {
+        tripService.updateCursor(tripId, cursorUpdateMsg);
     }
 }

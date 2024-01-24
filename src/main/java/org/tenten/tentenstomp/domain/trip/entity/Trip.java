@@ -41,6 +41,7 @@ public class Trip extends BaseTimeEntity {
     private String tripName;
     private Long budget;
     private String joinCode;
+    private String encryptedId;
     @ColumnDefault("0")
     private Long tripItemPriceSum;
     @ColumnDefault("0")
@@ -78,7 +79,7 @@ public class Trip extends BaseTimeEntity {
             tripStatus = ING;
         }
 
-        return new TripInfoMsg(this.getId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
+        return new TripInfoMsg(this.getEncryptedId(), request.startDate(), request.endDate(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public TripInfoMsg toTripInfo() {
@@ -91,7 +92,7 @@ public class Trip extends BaseTimeEntity {
         } else {
             tripStatus = ING;
         }
-        return new TripInfoMsg(this.getId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
+        return new TripInfoMsg(this.getEncryptedId(), this.startDate.toString(), this.endDate.toString(), this.getNumberOfPeople(), this.getTripName(), tripStatus, this.getBudget());
     }
 
     public void updateTripPathPriceMap(Map<String, Integer> tripPathPriceMap) {
@@ -109,6 +110,14 @@ public class Trip extends BaseTimeEntity {
     public void updateTripItemPriceSum(Long oldTripItemPrice, Long newTripItemPrice) {
         this.tripItemPriceSum -= oldTripItemPrice;
         this.tripItemPriceSum += newTripItemPrice;
+    }
+
+    public void updateTripItemPriceSum(Long tripItemPriceSum) {
+        this.tripItemPriceSum = tripItemPriceSum;
+    }
+
+    public void updateTransportationPriceSum(Integer transportationPriceSum) {
+        this.transportationPriceSum = transportationPriceSum;
     }
 
     public void updateBudget(Long budget) {

@@ -35,6 +35,9 @@ public class KafkaProducer {
             if (data.getClass().equals(TripBudgetMsg.class)) {
                 send(BUDGET, data);
             }
+            if (data.getClass().equals(TripCursorMsg.class)) {
+                send(CURSOR, data);
+            }
         }
     }
 
@@ -43,27 +46,32 @@ public class KafkaProducer {
             if (data.getClass().equals(TripPathMsg.class)) {
                 send(PATH, data);
                 TripPathMsg tripPathMsg = (TripPathMsg) data;
-                redisCache.save(PATH, Long.toString(tripPathMsg.tripId()), tripPathMsg.visitDate(), tripPathMsg);
+                redisCache.save(PATH, tripPathMsg.tripId(), tripPathMsg.visitDate(), tripPathMsg);
             }
             if (data.getClass().equals(TripItemMsg.class)) {
                 send(TRIP_ITEM, data);
                 TripItemMsg tripItemMsg = (TripItemMsg) data;
-                redisCache.save(TRIP_ITEM, Long.toString(tripItemMsg.tripId()), tripItemMsg.visitDate(), tripItemMsg);
+                redisCache.save(TRIP_ITEM, tripItemMsg.tripId(), tripItemMsg.visitDate(), tripItemMsg);
             }
             if (data.getClass().equals(TripInfoMsg.class)) {
                 send(TRIP_INFO, data);
                 TripInfoMsg tripInfoMsg = (TripInfoMsg) data;
-                redisCache.save(TRIP_INFO, Long.toString(tripInfoMsg.tripId()), tripInfoMsg);
+                redisCache.save(TRIP_INFO, tripInfoMsg.tripId(), tripInfoMsg);
             }
             if (data.getClass().equals(TripMemberMsg.class)) {
                 send(MEMBER, data);
                 TripMemberMsg tripMemberMsg = (TripMemberMsg) data;
-                redisCache.save(MEMBER, Long.toString(tripMemberMsg.tripId()), tripMemberMsg);
+                redisCache.save(MEMBER, tripMemberMsg.tripId(), tripMemberMsg);
             }
             if (data.getClass().equals(TripBudgetMsg.class)) {
                 send(BUDGET, data);
                 TripBudgetMsg tripBudgetMsg = (TripBudgetMsg) data;
-                redisCache.save(BUDGET, Long.toString(tripBudgetMsg.tripId()), tripBudgetMsg);
+                redisCache.save(BUDGET, tripBudgetMsg.tripId(), tripBudgetMsg);
+            }
+            if (data.getClass().equals(TripCursorMsg.class)) {
+                send(CURSOR, data);
+                TripCursorMsg tripCursorMsg = (TripCursorMsg) data;
+                redisCache.save(CURSOR, tripCursorMsg.tripId(), tripCursorMsg.visitDate(), tripCursorMsg);
             }
         }
     }
