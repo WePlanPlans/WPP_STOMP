@@ -28,6 +28,7 @@ import java.util.Optional;
 import static java.time.LocalDate.parse;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
+import static org.tenten.tentenstomp.global.common.constant.ErrorMsgConstant.NOT_FOUND_TRIP;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
 import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.fromTripItems;
@@ -46,7 +47,7 @@ public class TripItemService {
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
-            Trip trip = tripRepository.findByEncryptedId(priceUpdateMsg.tripId()).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정 X ", NOT_FOUND));
+            Trip trip = tripRepository.findByEncryptedId(priceUpdateMsg.tripId()).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP+priceUpdateMsg.tripId(), NOT_FOUND));
             kafkaProducer.sendWithOutCaching(
                 messageProxyRepository.getTripBudgetMsg(trip),
                 messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), priceUpdateMsg.visitDate())
@@ -110,7 +111,7 @@ public class TripItemService {
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
-            Trip trip = tripRepository.findByEncryptedId(visitDateUpdateMsg.tripId()).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정 X", NOT_FOUND));
+            Trip trip = tripRepository.findByEncryptedId(visitDateUpdateMsg.tripId()).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP+visitDateUpdateMsg.tripId(), NOT_FOUND));
             kafkaProducer.sendWithOutCaching(
                 messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), visitDateUpdateMsg.oldVisitDate()),
                 messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), visitDateUpdateMsg.newVisitDate()),
@@ -171,7 +172,7 @@ public class TripItemService {
     public void deleteTripItem(String tripItemId, TripItemDeleteMsg tripItemDeleteMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
-            Trip trip = tripRepository.findByEncryptedId(tripItemDeleteMsg.tripId()).orElseThrow(() -> new GlobalException("아이디로 존재하는 여정 X", NOT_FOUND));
+            Trip trip = tripRepository.findByEncryptedId(tripItemDeleteMsg.tripId()).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP+tripItemDeleteMsg.tripId(), NOT_FOUND));
             kafkaProducer.sendWithOutCaching(
                 messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), tripItemDeleteMsg.visitDate()),
                 messageProxyRepository.getTripPathMsg(trip.getEncryptedId(), tripItemDeleteMsg.visitDate()),

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg.fromEntity;
+import static org.tenten.tentenstomp.global.common.constant.ErrorMsgConstant.NOT_FOUND_TRIP;
 import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
@@ -45,7 +46,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
             return objectMapper.convertValue(cached, TripMemberMsg.class);
         }
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
-        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP + tripId, NOT_FOUND));
         List<TripMemberInfoMsg> tripMembers = memberRepository.findTripMemberInfoByTripId(tripId).stream().map(
             tm -> new TripMemberInfoMsg(tm.memberId(), tm.name(), tm.thumbnailUrl(), connectedMember.contains(tm.memberId()))
         ).toList();
@@ -90,7 +91,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
             return objectMapper.convertValue(cached, TripItemMsg.class);
 
         }
-        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
@@ -110,7 +111,7 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         if (cached != null) {
             return objectMapper.convertValue(cached, TripPathMsg.class);
         }
-        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다 " + tripId, NOT_FOUND));
+        Trip trip = tripRepository.findByEncryptedId(tripId).orElseThrow(() -> new GlobalException(NOT_FOUND_TRIP + tripId, NOT_FOUND));
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
