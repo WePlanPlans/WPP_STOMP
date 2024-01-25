@@ -25,42 +25,42 @@ public class KafkaConsumer {
     @KafkaListener(topics = TRIP_INFO, groupId = GROUP_ID_CONFIG)
     public void updateTripInfo(TripInfoMsg tripInfoMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripInfoMsg.tripId(), TRIP_INFO);
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripInfoMsg));
     }
 
     @KafkaListener(topics = TRIP_ITEM, groupId = GROUP_ID_CONFIG)
     public void updateTripItem(TripItemMsg tripItemMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripItemMsg.tripId(), TRIP_ITEM, LocalDate.parse(tripItemMsg.visitDate()));
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripItemMsg));
     }
 
     @KafkaListener(topics = PATH, groupId = GROUP_ID_CONFIG)
     public void updateTripPath(TripPathMsg tripPathMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripPathMsg.tripId(), PATH, LocalDate.parse(tripPathMsg.visitDate()));
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripPathMsg));
     }
 
     @KafkaListener(topics = MEMBER, groupId = GROUP_ID_CONFIG)
     public void updateConnectedTripMember(TripMemberMsg tripMemberMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripMemberMsg.tripId(), MEMBER);
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripMemberMsg));
     }
 
     @KafkaListener(topics = BUDGET, groupId = GROUP_ID_CONFIG)
     public void updateBudget(TripBudgetMsg tripBudgetMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripBudgetMsg.tripId(), BUDGET);
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripBudgetMsg));
     }
 
     @KafkaListener(topics = CURSOR, groupId = GROUP_ID_CONFIG)
     public void updateCursor(TripCursorMsg tripCursorMsg) {
         String destination = topicUtil.topicToReturnEndPoint(tripCursorMsg.tripId(), CURSOR, LocalDate.parse(tripCursorMsg.visitDate()));
-        log.info(destination);
+//        log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripCursorMsg));
     }
 }
