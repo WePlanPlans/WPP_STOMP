@@ -25,6 +25,7 @@ import org.tenten.tentenstomp.global.util.SecurityUtil;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.lang.Integer.parseInt;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg.fromEntity;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
@@ -262,7 +263,7 @@ public class TripService {
     public void updateCursor(String tripId, CursorUpdateMsg cursorUpdateMsg) {
         Long memberId = securityUtil.getMemberId(cursorUpdateMsg.token());
         Member member = memberRepository.getReferenceById(memberId);
-        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y(), COLORS[memberId % 5]);
+        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y(), COLORS[parseInt(Long.toString(memberId)) % 5]);
         kafkaProducer.send(CURSOR, tripCursorMsg);
     }
     @WithRedissonLock
