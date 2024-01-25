@@ -35,6 +35,9 @@ public class KafkaProducer {
             if (data.getClass().equals(TripBudgetMsg.class)) {
                 send(BUDGET, data);
             }
+            if (data.getClass().equals(TripCursorMsg.class)) {
+                send(CURSOR, data);
+            }
         }
     }
 
@@ -64,6 +67,11 @@ public class KafkaProducer {
                 send(BUDGET, data);
                 TripBudgetMsg tripBudgetMsg = (TripBudgetMsg) data;
                 redisCache.save(BUDGET, tripBudgetMsg.tripId(), tripBudgetMsg);
+            }
+            if (data.getClass().equals(TripCursorMsg.class)) {
+                send(CURSOR, data);
+                TripCursorMsg tripCursorMsg = (TripCursorMsg) data;
+                redisCache.save(CURSOR, tripCursorMsg.tripId(), tripCursorMsg.visitDate(), tripCursorMsg);
             }
         }
     }

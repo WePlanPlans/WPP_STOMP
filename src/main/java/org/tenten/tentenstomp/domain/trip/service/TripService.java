@@ -3,6 +3,7 @@ package org.tenten.tentenstomp.domain.trip.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.tenten.tentenstomp.domain.member.entity.Member;
 import org.tenten.tentenstomp.domain.member.repository.MemberRepository;
 import org.tenten.tentenstomp.domain.tour.repository.TourItemRepository;
 import org.tenten.tentenstomp.domain.trip.dto.request.*;
@@ -47,7 +48,6 @@ public class TripService {
     private final MessageProxyRepository messageProxyRepository;
     private final SecurityUtil securityUtil;
     private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
-
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
         HashSet<Long> connectedMember = tripConnectedMemberMap.getOrDefault(tripId, new HashSet<>());
@@ -118,6 +118,22 @@ public class TripService {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
 
         TripInfoMsg tripInfoMsg = trip.changeTripInfo(tripUpdateMsg);
+
+        LocalDate startDate = trip.getStartDate();
+        LocalDate endDate = trip.getEndDate();
+        LocalDate currentDate = startDate;
+        Integer transportationPriceSum = 0;
+        Long itemPriceSum = 0L;
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        while (!currentDate.isAfter(endDate)) {
+            transportationPriceSum += tripPathPriceMap.getOrDefault(currentDate.toString(), 0);
+            itemPriceSum += tripItemRepository.findTripItemPriceSumByTripIdAndVisitDate(tripId, currentDate);
+            currentDate = currentDate.plusDays(1L);
+        }
+
+        trip.updateTripItemPriceSum(itemPriceSum);
+        trip.updateTransportationPriceSum(transportationPriceSum);
+
         TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
         tripRepository.save(trip);
 
@@ -233,5 +249,37 @@ public class TripService {
         tripConnectedMemberMap.put(tripId, connectedMember);
         kafkaProducer.sendAndSaveToRedis(tripMemberMsg);
 
+    }
+
+    @Transactional
+    public void updateCursor(String tripId, CursorUpdateMsg cursorUpdateMsg) {
+        Long memberId = securityUtil.getMemberId(cursorUpdateMsg.token());
+        Member member = memberRepository.getReferenceById(memberId);
+        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y());
+        kafkaProducer.sendAndSaveToRedis(tripCursorMsg);
+    }
+    @Transactional
+    public void updateTripDate(String tripId, LocalDate startDate, LocalDate endDate) {
+        Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
+        TripInfoMsg tripInfoMsg = TripInfoMsg.fromEntity(trip);
+
+
+        LocalDate currentDate = startDate;
+        Integer transportationPriceSum = 0;
+        Long itemPriceSum = 0L;
+        Map<String, Integer> tripPathPriceMap = trip.getTripPathPriceMap();
+        while (!currentDate.isAfter(endDate)) {
+            transportationPriceSum += tripPathPriceMap.getOrDefault(currentDate.toString(), 0);
+            itemPriceSum += tripItemRepository.findTripItemPriceSumByTripIdAndVisitDate(tripId, currentDate);
+            currentDate = currentDate.plusDays(1L);
+        }
+
+        trip.updateTripItemPriceSum(itemPriceSum);
+        trip.updateTransportationPriceSum(transportationPriceSum);
+
+        TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
+        tripRepository.save(trip);
+
+        kafkaProducer.sendAndSaveToRedis(tripInfoMsg, tripBudgetMsg);
     }
 }

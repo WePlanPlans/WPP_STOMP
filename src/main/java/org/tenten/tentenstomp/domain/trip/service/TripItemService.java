@@ -182,6 +182,7 @@ public class TripItemService {
             Trip trip = tripItem.getTrip();
             Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
             LocalDate visitDate = tripItem.getVisitDate();
+            Long price = tripItem.getPrice();
             String transportation = tripTransportationMap.getOrDefault(visitDate.toString(), CAR.getName());
 
             List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripItem.getTrip().getEncryptedId(), visitDate);
@@ -205,6 +206,7 @@ public class TripItemService {
             tripPathPriceMap.put(visitDate.toString(), tripPath.pathPriceSum());
             trip.updateTripTransportationMap(tripTransportationMap);
             trip.updateTripPathPriceMap(tripPathPriceMap);
+            trip.updateTripItemPriceSum(price, 0L);
             tripRepository.save(trip);
 
             TripItemMsg tripItemMsg = fromTripItemList(trip.getEncryptedId(), visitDate.toString(), fromName(transportation), newTripItems);

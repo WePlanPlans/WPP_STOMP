@@ -55,6 +55,12 @@ public class KafkaConsumer {
         String destination = topicUtil.topicToReturnEndPoint(tripBudgetMsg.tripId(), BUDGET);
         log.info(destination);
         messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripBudgetMsg));
+    }
 
+    @KafkaListener(topics = CURSOR, groupId = GROUP_ID_CONFIG)
+    public void updateCursor(TripCursorMsg tripCursorMsg) {
+        String destination = topicUtil.topicToReturnEndPoint(tripCursorMsg.tripId(), CURSOR, LocalDate.parse(tripCursorMsg.visitDate()));
+//        log.info(destination);
+        messagingTemplate.convertAndSend(destination, GlobalStompResponse.ok(tripCursorMsg));
     }
 }
