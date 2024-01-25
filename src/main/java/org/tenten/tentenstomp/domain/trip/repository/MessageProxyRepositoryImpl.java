@@ -27,7 +27,6 @@ import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
 import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.fromTripItems;
-import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Repository
 @RequiredArgsConstructor
@@ -95,7 +94,6 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
-        updateSeqNum(tripItems);
         List<TripItemInfoMsg> tripItemInfoMsgs = tripItems.stream().map(t -> new TripItemInfoMsg(
             t.getId(), t.getTourItem().getId(), t.getTourItem().getTitle(), t.getTourItem().getOriginalThumbnailUrl(), Category.fromCode(t.getTourItem().getContentTypeId()).getName(), t.getSeqNum(), t.getVisitDate().toString(), t.getPrice()
         )).toList();
@@ -115,7 +113,6 @@ public class MessageProxyRepositoryImpl implements MessageProxyRepository {
         Map<String, String> tripTransportationMap = trip.getTripTransportationMap();
         String transportation = tripTransportationMap.getOrDefault(visitDate, CAR.getName());
         List<TripItem> tripItems = tripItemRepository.findTripItemByTripIdAndVisitDate(tripId, LocalDate.parse(visitDate));
-        updateSeqNum(tripItems);
         TripPathCalculationResult tripPath = pathComponent.getTripPath(fromTripItems(tripItems), fromName(transportation));
         TripPathMsg tripPathMsg = new TripPathMsg(tripId, visitDate, fromName(transportation), tripPath.tripPathInfoMsgs());
         redisCache.save(PATH, tripId, visitDate, tripPathMsg);
