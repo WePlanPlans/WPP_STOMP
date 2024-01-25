@@ -58,53 +58,43 @@
 # 패키지 구조
 ```
 ├── main
-│   ├── generated
 │   ├── java
 │   │   └── org
 │   │       └── tenten
-│   │           └── tentenbe
-│   │               ├── TenTenBeApplication.java
+│   │           └── tentenstomp
+│   │               ├── TenTenStompApplication.java
 │   │               ├── config
+│   │               │   ├── AsyncConfig.java
+│   │               │   ├── KafkaConsumerConfig.java
+│   │               │   ├── KafkaProducerConfig.java
+│   │               │   ├── KafkaTopicConfig.java
 │   │               │   ├── OpenApiConfig.java
-│   │               │   ├── PasswordEncoderConfig.java
 │   │               │   ├── RedisConfig.java
-│   │               │   ├── S3Config.java
-│   │               │   ├── SwaggerConfig.java
-│   │               │   └── WebConfig.java
+│   │               │   ├── WebConfig.java
+│   │               │   └── WebSocketConfig.java
 │   │               ├── domain
-│   │               │   ├── auth
-│   │               │   ├── category
 │   │               │   ├── comment
-│   │               │   ├── liked
 │   │               │   ├── member
-│   │               │   ├── region
 │   │               │   ├── review
-│   │               │   ├── token
 │   │               │   ├── tour
 │   │               │   └── trip
 │   │               └── global
+│   │                   ├── aspect
 │   │                   ├── cache
 │   │                   ├── common
 │   │                   ├── component
 │   │                   ├── converter
 │   │                   ├── exception
 │   │                   ├── handler
+│   │                   ├── jwt
+│   │                   ├── messaging
 │   │                   ├── response
-│   │                   ├── s3
-│   │                   ├── security
+│   │                   ├── stomp
 │   │                   └── util
 │   └── resources
-│       ├── application-ci.yml
-│       ├── application-prod.yml
 │       ├── application.yml
-│       ├── data
-│       │   ├── Keyword.sql
-│       │   ├── Member.sql
-│       │   ├── TourItem.sql
-│       │   └── TourItemReviewKeyword.sql
-│       ├── schema.sql
 │       ├── static
-│       │   └── favicon.ico
 │       └── templates
 └── test
+
 ```
