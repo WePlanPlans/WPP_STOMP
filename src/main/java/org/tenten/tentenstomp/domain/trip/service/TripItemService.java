@@ -14,6 +14,7 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
+import org.tenten.tentenstomp.global.common.annotation.WithRedissonLock;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.exception.GlobalException;
@@ -42,7 +43,7 @@ public class TripItemService {
     private final KafkaProducer kafkaProducer;
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
-
+    @WithRedissonLock(paramClassType = TripItemPriceUpdateMsg.class)
     @Transactional
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
@@ -106,7 +107,7 @@ public class TripItemService {
         updateSeqNum(newPastDateTripItems);
         updateSeqNum(newDateTripItems);
     }
-
+    @WithRedissonLock(paramClassType = TripItemVisitDateUpdateMsg.class)
     @Transactional
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
@@ -167,7 +168,7 @@ public class TripItemService {
         tripPathPriceMap.put(newDate.toString(), newDateTripPath.pathPriceSum());
         trip.updateTripPathPriceMap(tripPathPriceMap);
     }
-
+    @WithRedissonLock(paramClassType = TripItemDeleteMsg.class)
     @Transactional
     public void deleteTripItem(String tripItemId, TripItemDeleteMsg tripItemDeleteMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId));

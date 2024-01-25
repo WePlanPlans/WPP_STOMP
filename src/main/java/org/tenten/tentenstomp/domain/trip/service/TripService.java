@@ -15,6 +15,7 @@ import org.tenten.tentenstomp.domain.trip.entity.TripItem;
 import org.tenten.tentenstomp.domain.trip.repository.MessageProxyRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripItemRepository;
 import org.tenten.tentenstomp.domain.trip.repository.TripRepository;
+import org.tenten.tentenstomp.global.common.annotation.WithRedissonLock;
 import org.tenten.tentenstomp.global.component.PathComponent;
 import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationResult;
 import org.tenten.tentenstomp.global.exception.GlobalException;
@@ -112,7 +113,7 @@ public class TripService {
         );
     }
 
-
+    @WithRedissonLock
     @Transactional
     public void updateTrip(String tripId, TripUpdateMsg tripUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
@@ -140,7 +141,7 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripInfoMsg, tripBudgetMsg);
 
     }
-
+    @WithRedissonLock
     @Transactional
     public void addTripItem(String tripId, TripItemAddMsg tripItemAddMsg) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -177,7 +178,7 @@ public class TripService {
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripItemMsg, tripPathMsg);
     }
 
-
+    @WithRedissonLock
     @Transactional
     public void updateTripItemOrder(String tripId, TripItemOrderUpdateMsg orderUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -200,7 +201,7 @@ public class TripService {
         kafkaProducer.send(TRIP_ITEM, messageProxyRepository.getTripItemMsg(trip.getEncryptedId(), pathAndItemRequestMsg.visitDate()));
         kafkaProducer.send(PATH, messageProxyRepository.getTripPathMsg(trip.getEncryptedId(), pathAndItemRequestMsg.visitDate()));
     }
-
+    @WithRedissonLock
     @Transactional
     public void updateTripBudget(String tripId, TripBudgetUpdateMsg tripBudgetUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -210,7 +211,7 @@ public class TripService {
         TripBudgetMsg tripBudgetMsg = TripBudgetMsg.fromEntity(trip);
         kafkaProducer.sendAndSaveToRedis(tripBudgetMsg, tripInfoMsg);
     }
-
+    @WithRedissonLock
     @Transactional
     public void updateTripTransportation(String tripId, TripTransportationUpdateMsg tripTransportationUpdateMsg) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -222,7 +223,7 @@ public class TripService {
         updateBudgetAndItemsAndPath(trip, tripItems, visitDate);
 
     }
-
+    @WithRedissonLock
     @Transactional
     public TripItemAddResponse addTripItemFromMainPage(String tripId, TripItemAddRequest tripItemAddRequest) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없습니다 " + tripId, NOT_FOUND));
@@ -258,6 +259,7 @@ public class TripService {
         TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y());
         kafkaProducer.sendAndSaveToRedis(tripCursorMsg);
     }
+    @WithRedissonLock
     @Transactional
     public void updateTripDate(String tripId, LocalDate startDate, LocalDate endDate) {
         Trip trip = tripRepository.findTripForUpdate(tripId).orElseThrow(() -> new GlobalException("해당 아이디로 존재하는 여정이 없다.", NOT_FOUND));
