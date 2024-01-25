@@ -29,8 +29,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripInfoMsg.fromEntity;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripMemberMsg.fromEntity;
-import static org.tenten.tentenstomp.global.common.constant.TopicConstant.PATH;
-import static org.tenten.tentenstomp.global.common.constant.TopicConstant.TRIP_ITEM;
+import static org.tenten.tentenstomp.global.common.constant.TopicConstant.*;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.fromName;
 import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.fromTripItems;
@@ -48,6 +47,13 @@ public class TripService {
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
     private final SecurityUtil securityUtil;
+    private static final String[] COLORS = new String[]{
+        "#FF2167",
+        "#7932FF",
+        "#29DDF6",
+        "#FFAC16",
+        "#16E7A9"
+    };
     private final Map<String, HashSet<Long>> tripConnectedMemberMap = new HashMap<>();
     @Transactional
     public void connectMember(String tripId, MemberConnectMsg memberConnectMsg) {
@@ -256,8 +262,8 @@ public class TripService {
     public void updateCursor(String tripId, CursorUpdateMsg cursorUpdateMsg) {
         Long memberId = securityUtil.getMemberId(cursorUpdateMsg.token());
         Member member = memberRepository.getReferenceById(memberId);
-        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y());
-        kafkaProducer.sendAndSaveToRedis(tripCursorMsg);
+        TripCursorMsg tripCursorMsg = new TripCursorMsg(tripId, cursorUpdateMsg.visitDate(), memberId, member.getNickname(), cursorUpdateMsg.x(), cursorUpdateMsg.y(), COLORS[memberId % 5]);
+        kafkaProducer.send(CURSOR, tripCursorMsg);
     }
     @WithRedissonLock
     @Transactional
