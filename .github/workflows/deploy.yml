@@ -42,7 +42,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew build
+          ./gradlew bootJar
       - name: web docker build and push
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}

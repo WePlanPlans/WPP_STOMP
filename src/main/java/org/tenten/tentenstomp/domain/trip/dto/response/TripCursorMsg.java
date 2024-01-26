@@ -7,6 +7,7 @@ public record TripCursorMsg(
     Long memberId,
     String name,
     Double x,
-    Double y
+    Double y,
+    String color
 ) {
 }
