@@ -28,6 +28,7 @@ import java.util.Optional;
 
 import static java.time.LocalDate.parse;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.constant.ErrorMsgConstant.NOT_FOUND_TRIP;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
@@ -36,6 +37,7 @@ import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.from
 import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Service
+@Transactional(isolation = SERIALIZABLE)
 @RequiredArgsConstructor
 public class TripItemService {
     private final TripItemRepository tripItemRepository;
@@ -44,7 +46,6 @@ public class TripItemService {
     private final PathComponent pathComponent;
     private final MessageProxyRepository messageProxyRepository;
     @WithRedissonLock(paramClassType = TripItemPriceUpdateMsg.class)
-    @Transactional
     public void updateTripItemPrice(String tripItemId, TripItemPriceUpdateMsg priceUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -108,7 +109,6 @@ public class TripItemService {
         updateSeqNum(newDateTripItems);
     }
     @WithRedissonLock(paramClassType = TripItemVisitDateUpdateMsg.class)
-    @Transactional
     public void updateTripItemVisitDate(String tripItemId, TripItemVisitDateUpdateMsg visitDateUpdateMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForUpdate(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {
@@ -169,7 +169,6 @@ public class TripItemService {
         trip.updateTripPathPriceMap(tripPathPriceMap);
     }
     @WithRedissonLock(paramClassType = TripItemDeleteMsg.class)
-    @Transactional
     public void deleteTripItem(String tripItemId, TripItemDeleteMsg tripItemDeleteMsg) {
         Optional<TripItem> optionalTripItem = tripItemRepository.findTripItemForDelete(Long.parseLong(tripItemId));
         if (optionalTripItem.isEmpty()) {

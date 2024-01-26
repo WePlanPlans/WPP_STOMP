@@ -14,8 +14,9 @@ public @interface WithRedissonLock {
     String identifier() default "tripId";
     Class<?> paramClassType() default Object.class;
 
-    long waitTime() default 25L;
+    long waitTime() default 5L;
 
-    long leaseTime() default 25L;
+    long leaseTime() default 4L;
     TimeUnit timeUnit() default SECONDS;
+    boolean needSameTransaction() default false;
 }

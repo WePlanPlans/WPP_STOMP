@@ -10,6 +10,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.tenten.tentenstomp.global.common.annotation.WithRedissonLock;
+import org.tenten.tentenstomp.global.lock.RedissonTransactionFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,6 +24,7 @@ import static org.tenten.tentenstomp.global.common.constant.ErrorMsgConstant.*;
 @RequiredArgsConstructor
 public class UtilAspect {
     private final RedissonClient redissonClient;
+    private final RedissonTransactionFactory transactionFactory;
     @Around("@annotation(org.tenten.tentenstomp.global.common.annotation.GetExecutionTime)")
     public Object getExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
@@ -58,7 +60,9 @@ public class UtilAspect {
             log.info("redisson lock acquired " + tripId + " thread " + Thread.currentThread().getId());
             return joinPoint.proceed(joinPoint.getArgs());
         } finally {
-            lock.unlock();
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 
