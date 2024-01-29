@@ -59,6 +59,10 @@
 
 <img width="1435" alt="Screenshot 2024-01-25 at 13 23 15" src="https://github.com/WePlanPlans/WPP_STOMP/assets/95599193/f6ded1a4-3e75-4de0-9274-700512db02a8">
 
+# 프로젝트 아키택쳐 
+
+![image](https://github.com/WePlanPlans/WPP_STOMP/assets/95599193/02820999-5114-4e63-a5a0-cde5b7567501)
+
 
 # 패키지 구조
 ```
