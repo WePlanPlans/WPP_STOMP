@@ -3,7 +3,7 @@
 
 ## 배포 링크
 
-> **애플리케이션 메인 페이지** : [https://dev-weplanplans.vercel.app](https://dev-weplanplans.vercel.app)
+> **애플리케이션 메인 페이지** : [https://weplanplans.vercel.app](https://weplanplans.vercel.app)
 > <br/>
 > **Swagger API 문서 배포 링크** : [https://api.weplanplans.site/swagger-ui/index.html](https://api.weplanplans.site/swagger-ui/index.html)
 > <br/>
@@ -54,6 +54,11 @@
 |                                                                    `TourItem API` <br/> `Trip API`                                                                     |                                                        `Review API` <br/> `Keyword API` <br/> `STOMP API`                                                         |
 
 </div>
+
+# ERD
+
+<img width="1435" alt="Screenshot 2024-01-25 at 13 23 15" src="https://github.com/WePlanPlans/WPP_STOMP/assets/95599193/f6ded1a4-3e75-4de0-9274-700512db02a8">
+
 
 # 패키지 구조
 ```
