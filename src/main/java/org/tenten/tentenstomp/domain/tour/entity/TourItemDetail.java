@@ -9,6 +9,7 @@ import org.tenten.tentenstomp.global.converter.JsonConverter;
 import java.util.List;
 import java.util.Objects;
 
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -31,7 +32,7 @@ public class TourItemDetail {
     private ItemDetail itemDetail;
 
 
-    @OneToOne
+    @OneToOne(fetch = LAZY)
     @JoinColumn(name = "tourItemId")
     private TourItem tourItem;
 
