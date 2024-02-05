@@ -11,6 +11,7 @@ import org.tenten.tentenstomp.global.common.BaseTimeEntity;
 
 import java.time.LocalDate;
 
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static jakarta.persistence.InheritanceType.JOINED;
 
@@ -36,7 +37,7 @@ public class TripItem extends BaseTimeEntity {
     private Trip trip;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "tourItemId")
     private TourItem tourItem;
 
