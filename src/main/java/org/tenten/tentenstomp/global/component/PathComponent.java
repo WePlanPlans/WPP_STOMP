@@ -13,7 +13,7 @@ import org.tenten.tentenstomp.global.component.dto.response.TripPathCalculationR
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Vector;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class PathComponent {
 
         } else {
             Integer priceSum = 0;
-            List<TripPathInfoMsg> pathInfoMsgs = new CopyOnWriteArrayList<>();
+            List<TripPathInfoMsg> pathInfoMsgs = new Vector<>();
             for (PathCalculateRequest calculateRequest : pathCalculateRequests) {
                 asyncPathComponent.calculatePath(calculateRequest.from(), calculateRequest.to(), pathInfoMsgs, transportation);
             }
