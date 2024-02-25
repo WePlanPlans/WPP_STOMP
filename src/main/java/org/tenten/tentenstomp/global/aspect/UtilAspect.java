@@ -47,7 +47,7 @@ public class UtilAspect {
             signature.getParameterNames()
         );
 
-        RLock lock = redissonClient.getLock(tripId);
+        RLock lock = redissonClient.getLock(tripId+" "+method.getName());
 
         long waitTime = withRedissonLock.waitTime();
         long leaseTime = withRedissonLock.leaseTime();
