@@ -29,7 +29,12 @@ public class AsyncPathComponent {
         } else {
             pathInfo = odsayComponent.calculatePathInfo(fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude());
         }
-        log.info("from id "+fromPlace.tripItemId()+" to id "+toPlace.tripItemId()+" from seqNum " + fromPlace.seqNum() + " to seqNum " + toPlace.seqNum() + " executionTime : " + ((System.currentTimeMillis() - startTime) / 1000.0));
-        pathInfoMsgs.add(new TripPathInfoMsg(fromPlace.tripItemId(), toPlace.tripItemId(), fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(),  pathInfo));
+        log.info("from id " + fromPlace.tripItemId() + " to id " + toPlace.tripItemId() + " from seqNum " + fromPlace.seqNum() + " to seqNum " + toPlace.seqNum() + " executionTime : " + ((System.currentTimeMillis() - startTime) / 1000.0));
+        TripPathInfoMsg infoMsg = new TripPathInfoMsg(fromPlace.tripItemId(), toPlace.tripItemId(), fromPlace.seqNum(), toPlace.seqNum(), fromPlace.longitude(), fromPlace.latitude(), toPlace.longitude(), toPlace.latitude(), pathInfo);
+        addToList(pathInfoMsgs, infoMsg);
+    }
+
+    private synchronized void addToList(List<TripPathInfoMsg> pathInfoMsgs, TripPathInfoMsg infoMsg) {
+        pathInfoMsgs.add(infoMsg);
     }
 }

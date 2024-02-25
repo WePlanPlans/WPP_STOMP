@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import static java.time.LocalDate.parse;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
+import static org.springframework.transaction.annotation.Isolation.REPEATABLE_READ;
 import static org.tenten.tentenstomp.domain.trip.dto.response.TripItemMsg.fromTripItemList;
 import static org.tenten.tentenstomp.global.common.constant.ErrorMsgConstant.NOT_FOUND_TRIP;
 import static org.tenten.tentenstomp.global.common.enums.Transportation.CAR;
@@ -37,7 +37,7 @@ import static org.tenten.tentenstomp.global.component.dto.request.TripPlace.from
 import static org.tenten.tentenstomp.global.util.SequenceUtil.updateSeqNum;
 
 @Service
-@Transactional(isolation = SERIALIZABLE)
+@Transactional(isolation = REPEATABLE_READ)
 @RequiredArgsConstructor
 public class TripItemService {
     private final TripItemRepository tripItemRepository;

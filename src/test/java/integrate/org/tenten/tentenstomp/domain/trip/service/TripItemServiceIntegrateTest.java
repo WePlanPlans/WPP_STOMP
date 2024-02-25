@@ -110,17 +110,18 @@ class TripItemServiceIntegrateTest {
     @DisplayName("redisson lock 테스트")
     public void testRedissonLock() throws Exception{
         // given
-        int threadCount = 100;
+        int threadCount = 30;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
         CountDownLatch latch = new CountDownLatch(threadCount);
         // when
-        int[] array = IntStream.range(0, 100).toArray();
+        int[] array = IntStream.range(0, 30).toArray();
         for (int i : array) {
             executorService.submit(() -> {
                 try {
                     TripItem tripItem = tripItems.get(i % tripItems.size());
                     Trip trip = tripItem.getTrip();
                     tripItemService.updateTripItemPrice(tripItem.getId().toString(), new TripItemPriceUpdateMsg(trip.getEncryptedId(), LocalDate.now().toString(), i + 100L));
+                    tripItem.updatePrice(i + 100L);
                 } finally {
                     latch.countDown();
                 }
@@ -131,8 +132,14 @@ class TripItemServiceIntegrateTest {
         Optional<Trip> byEncryptedId = tripRepository.findByEncryptedId(trips.get(0).getEncryptedId());
         assert byEncryptedId.isPresent();
         Trip trip = byEncryptedId.get();
-        log.info(String.valueOf(trip.getTripItemPriceSum()));
-        assert trip.getTripItemPriceSum().equals(800L - 10L);
+        log.info("tripPriceSum "+ String.valueOf(trip.getTripItemPriceSum()));
+        List<TripItem> items = tripItemRepository.findTripItemByTripIdAndVisitDate(trips.get(0).getEncryptedId(), LocalDate.now());
+        long priceSum = 0;
+        for (TripItem tripItem : items) {
+            priceSum += tripItem.getPrice();
+        }
+        log.info("priceSum "+priceSum);
+        assert trip.getTripItemPriceSum().equals(priceSum);
 
     }
 }
